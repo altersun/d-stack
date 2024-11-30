@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annulus Example</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="circleCanvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('circleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const outerRadius = 100; // Radius of the outer circle
+        const innerRadius = 50;  // Radius of the inner circle
+
+        // Draw the annulus
+        ctx.beginPath();
+
+        // Outer circle (clockwise)
+        ctx.arc(centerX, centerY, outerRadius, 0, Math.PI * 2);
+
+        // Inner circle (counter-clockwise to "cut out" the center)
+        ctx.arc(centerX, centerY, innerRadius, Math.PI * 2, 0, true);
+
+        ctx.closePath(); // Close the path to complete the annulus
+        ctx.fillStyle = 'blue'; // Fill color
+        ctx.fill(); // Fill the annulus
+
+        // Optional: Draw the outline of the annulus
+        //ctx.lineWidth = 2; // Outline widths
+        //ctx.strokeStyle = 'black'; // Outline color
+        //ctx.stroke();
+
+         // Add text inside the annulus
+        ctx.font = '20px Arial'; // Font size and style
+        ctx.fillStyle = 'Black'; // Text color
+        ctx.textAlign = 'center'; // Align text horizontally to the center
+        ctx.textBaseline = 'middle'; // Align text vertically to the center
+        ctx.fillText('This is\na Donut', centerX, centerY, innerRadius); // Draw the text
+    </script>
+</body>s
+</html>
