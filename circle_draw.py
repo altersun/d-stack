@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 
-def create_annulus_with_wrapped_text(outer_radius=130, font_size=20, text="Hurfadurfdoo! Slapasmappy!") -> ImageDraw:
+def create_annulus_with_wrapped_text(outer_radius=150, font_size=20, text="Hurfadurfdoo! Slapasmappy!") -> ImageDraw:
     # Create an image with a transparent background
     image_size = [int(outer_radius * 2.2)] * 2
     inner_radius = int(outer_radius * 0.5)
@@ -47,21 +47,28 @@ def create_annulus_with_wrapped_text(outer_radius=130, font_size=20, text="Hurfa
         # TODO: Add better exception reporting
         font = ImageFont.load_default()
 
+    # Determine general letter height and width
+    dummy_image = Image.new("RGB", (1, 1))
+    draw = ImageDraw.Draw(dummy_image)
+    bbox = draw.textbbox((0,0), 'A', font=font)
+    A_width = (bbox[2] - bbox[0])
+    A_height = (bbox[3] - bbox[1]) * 1.25
+
     # Calculate the maximum width for text wrapping
     max_text_width = inner_radius * 2 - 20  # Slight padding from the inner circle
-    wrapped_text = textwrap.fill(text, width=max_text_width // font.getsize('A')[0])
+    wrapped_text = textwrap.fill(text, width=max_text_width // A_width)
 
     # Center the text vertically in the annulus
     lines = wrapped_text.split("\n")
-    text_height = len(lines) * font.getsize('A')[1]
+    text_height = len(lines) * A_height
     y_offset = image_size[1] // 2 - text_height // 2
 
     draw = ImageDraw.Draw(image)
     for line in lines:
-        text_width = font.getsize(line)[0]
+        text_width = font.getlength(line)
         x_offset = image_size[0] // 2 - text_width // 2
         draw.text((x_offset, y_offset), line, fill="black", font=font)
-        y_offset += font.getsize('A')[1]
+        y_offset += A_height
     
     return image
 

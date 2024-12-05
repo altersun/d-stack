@@ -1,5 +1,4 @@
 import aiohttp
-import aiohttp
 from sanic import Sanic, response, Request, Websocket
 from sanic.log import logger
 import random
