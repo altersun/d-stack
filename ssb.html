@@ -30,7 +30,7 @@
             font-size: 16px;
             cursor: pointer;
 
-            background-color: #007BFF;
+            background-color: #0056b3;
             color: white;
             border: none;
             border-radius: 5px;
@@ -44,14 +44,19 @@
     <h1>Spiritual Seven Ball</h1>
     <h3>Hold your YES/NO question in your mind...</h3>
     <button id="fetchButton">Click for answer</button>
-    <div id="display">Your answer awaits...</div>
-    <img id="receivedImage" alt="Waiting for image..." style="max-width: 100%; border: 1px solid #000;">
+    <img id="receivedImage" alt="The future awaits  ..." style="max-width: 100%;">
 
     <script>
-        const button = document.getElementById('fetchButton');
-        const display = document.getElementById('display');
-        const sevenball = document.getElementById('receivedImage');
-
+        function set_button_enabled(setting) {
+            button = document.getElementById('fetchButton');
+            if (setting) {
+                button.disabled = false;
+                button.style.backgroundColor = "#0056b3";
+            } else {
+                button.disabled = true;
+                button.style.backgroundColor = "#afc3d8";
+            }
+        }
 
         function request_image(send_str) {
             const socket = new WebSocket('ws://' + window.location.host + '/answer');
@@ -60,9 +65,7 @@
             socket.addEventListener('open', () => {
                 console.log('WebSocket connection established');
                 socket.send(send_str); // Send a message to request the string
-                button.disabled = true;
-                button.style.backgroundColor = "#5497df";
-                
+                set_button_enabled(false)
             });
 
             // Handle incoming messages
@@ -84,15 +87,15 @@
             // Handle errors
             socket.addEventListener('error', (error) => {
                 console.error('WebSocket error:', error);
-                display.textContent = 'An error occurred with the WebSocket connection.';
                 socket.close(); // Ensure WebSocket is closed on error
-                button.disabled = false;
+                button = document.getElementById('fetchButton');
+                set_button_enabled(true)
             });
 
             // Handle WebSocket close event
             socket.addEventListener('close', () => {
                 console.log('WebSocket connection closed by server or client.');
-                button.disabled = false;
+                set_button_enabled(true)
             });
         }
 
@@ -100,10 +103,9 @@
             request_image("INITIAL");
         };
 
-        button.addEventListener('click', () => {
+        document.getElementById('fetchButton').addEventListener('click', () => {
             request_image("FORTUNE");
         });
-
 
     </script>
 </body>

@@ -31,7 +31,6 @@ WAIT_FOR_IT = create_annulus_with_wrapped_text(font_size=25, text='Wait for it..
 async def get_random_int(maximum: int, force_local: bool = False) -> int:
     return get_random_ints(maximum, 1, force_local=force_local)[0]
 
-
 async def get_random_ints(maximum: int, quantity: int = 1, force_local: bool = False) -> list:
     # Request 2 random numbers from random.org based on maximum^2
 
@@ -64,17 +63,6 @@ async def get_random_ints(maximum: int, quantity: int = 1, force_local: bool = F
     backup_ret = [int(random.random() * maximum) for _ in range(quantity)]
     logger.info(f"Supplying psuerandom as a backup: {backup_ret}")
     return backup_ret
-
-
-@app.websocket("/ball", name='ball')
-async def feed(request: Request, ws: Websocket):
-    async for msg in ws:
-        logger.info(f'Recieved: {msg}')
-        logger.info('Creating image...')
-        encoded_7 = png_encode_image(SEVEN_BALL_DEFAULT)
-        await ws.send(encoded_7)
- #       await ws.send("All done!")
-
 
 
 @app.websocket("/answer", name='answer')
@@ -127,7 +115,7 @@ def load_answers(answer_file: str) -> list:
     return answers
 
 
-@app.route('/derp', name='reload')
+@app.route('/reload', name='reload')
 async def reload_answers(answer_file: str):
     # TODO: Redirect to '/answers/' when done
     global ANSWERS
@@ -143,8 +131,6 @@ async def reload_answers(answer_file: str):
         ANSWER_LOCK = False
 
     
-
-
 if __name__ == '__main__':
     logger.info(f'global copy of answers: {ANSWERS}')
     if len(ANSWERS) <= 0:
