@@ -39,13 +39,12 @@ def create_annulus_with_wrapped_text(outer_radius=150, font_size=20, text="Hurfa
 
 
     # Add wrapped text in the center of the annulus
-    try:
-        # Load a default font with a reasonable size
-        font = ImageFont.truetype("c0419bt_.pfb", font_size)
-    except IOError:
-        # Use a simple default font if truetype font is not available
+    # try:
+    font = ImageFont.truetype("Symbola_hint.ttf", font_size)
+    #except IOError:
+    #    # Use a simple default font if truetype font is not available
         # TODO: Add better exception reporting
-        font = ImageFont.load_default()
+    #    font = ImageFont.load_default()
 
     # Determine general letter height and width
     dummy_image = Image.new("RGB", (1, 1))
@@ -55,7 +54,7 @@ def create_annulus_with_wrapped_text(outer_radius=150, font_size=20, text="Hurfa
     A_height = (bbox[3] - bbox[1]) * 1.25
 
     # Calculate the maximum width for text wrapping
-    max_text_width = inner_radius * 2 - 20  # Slight padding from the inner circle
+    max_text_width = inner_radius * 2 + 10  
     wrapped_text = textwrap.fill(text, width=max_text_width // A_width)
 
     # Center the text vertically in the annulus

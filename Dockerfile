@@ -13,7 +13,8 @@ RUN pip install --no-cache-dir aiohttp
 RUN pip install --no-cache-dir pillow
 
 # Install fonts for text-in-images
-RUN apt-get update && apt-get install -y fonts-dejavu && rm -rf /var/lib/apt/lists/*
+# Using Symbola_hint for emoji support
+RUN apt-get update && apt-get install -y fonts-symbola && rm -rf /var/lib/apt/lists/*
 
 # Expose the port the app runs on
 EXPOSE 8000
