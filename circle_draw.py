@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 
-def create_annulus_with_wrapped_text(outer_radius=150, font_size=20, text="Hurfadurfdoo! Slapasmappy!") -> ImageDraw:
+def create_annulus_with_wrapped_text(outer_radius=160, font_size=20, text="Hurfadurfdoo! Slapasmappy!") -> ImageDraw:
     # Create an image with a transparent background
     image_size = [int(outer_radius * 2.2)] * 2
     inner_radius = int(outer_radius * 0.5)
@@ -55,7 +55,11 @@ def create_annulus_with_wrapped_text(outer_radius=150, font_size=20, text="Hurfa
 
     # Calculate the maximum width for text wrapping
     max_text_width = inner_radius * 2 + 10  
-    wrapped_text = textwrap.fill(text, width=max_text_width // A_width)
+    wrapped_text = textwrap.fill(
+        text, 
+        width=max_text_width // A_width,
+        break_long_words=False
+    )
 
     # Center the text vertically in the annulus
     lines = wrapped_text.split("\n")
