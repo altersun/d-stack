@@ -1,0 +1,68 @@
+/* Simple CSS for Pandoc Markdown-to-HTML Conversion */
+
+/* Apply to the body of the document */
+body {
+    background-color: #f9f9f9; /* Light background */
+    color: #333333;           /* Dark text */
+    font-family: Arial, sans-serif;
+    line-height: 1.8;         /* Increase line spacing for readability */
+    margin: 0;                /* Remove default margins */
+    padding: 0;               /* Remove default padding */
+    display: flex;            /* Flexbox for centering content */
+    justify-content: center;  /* Horizontally center content */
+    align-items: flex-start;  /* Align content at the top of the viewport */
+    min-height: 100vh;        /* Make the body fill the viewport height */
+}
+
+/* Styling for the main content container */
+.container {
+    text-align: right;        /* Right-align the text */
+    max-width: 60ch;          /* Limit line width to ~60 characters */
+    width: 100%;              /* Allow container to expand within limits */
+    margin: 2rem;             /* Add space around the content */
+    padding: 1.5rem;          /* Add padding inside the content area */
+    background-color: #ffffff; /* White background for contrast */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    border-radius: 8px;       /* Rounded corners */
+    border: 1px solid #dddddd; /* Light border for structure */
+}
+
+/* Headings styling */
+h1, h2, h3, h4, h5, h6 {
+    color: #222222;           /* Slightly darker for emphasis */
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Paragraphs styling */
+p {
+    margin-bottom: 1.2rem;    /* Increase spacing between paragraphs */
+}
+
+/* Links styling */
+a {
+    color: #0077cc;           /* Blue links */
+    text-decoration: none;    /* No underline */
+}
+
+a:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+
+/* Code blocks styling */
+pre, code {
+    font-family: 'Courier New', monospace;
+    background-color: #f4f4f4; /* Light gray background */
+    padding: 0.5rem;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+/* Blockquote styling */
+blockquote {
+    margin-left: 0;
+    padding-left: 1rem;
+    border-left: 4px solid #dddddd;
+    color: #666666;
+    font-style: italic;
+}

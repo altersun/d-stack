@@ -5,12 +5,11 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy the current directory contents into the container
-COPY . .
+COPY app /app
 
 # Install Sanic and other dependencies
-RUN pip install --no-cache-dir sanic
-RUN pip install --no-cache-dir aiohttp
-RUN pip install --no-cache-dir pillow
+COPY project/requirements /app
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Install fonts for text-in-images
 # Using Symbola_hint for emoji support
@@ -24,8 +23,20 @@ EXPOSE 8000
 #CMD ["python", "ssb.py"]
 CMD [\ 
 "sanic",\
-"d_stack.init",\
+"app.d_stack.init",\
 "--host=0.0.0.0",\
 "--port=8000",\
 "--workers=4"\
 ]
+
+# Use Nginx as the second stage
+FROM nginx:stable-alpine as nginx
+
+# Copy Nginx configuration
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy static files for Nginx to serve
+COPY app/static /var/www/
+
+# Expose Nginx port
+EXPOSE 80
