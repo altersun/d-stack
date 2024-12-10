@@ -1,12 +1,12 @@
 from sanic import Sanic, response, Request, Websocket
 from sanic.log import logger
 
-from ssb import setup_seven_ball
+from sevenball import setup_sevenball
 
 
 def init():
     app = Sanic("D-Stack")
-    setup_seven_ball(app)
+    setup_sevenball(app)
     return app
 
 

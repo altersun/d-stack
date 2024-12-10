@@ -8,7 +8,7 @@ WORKDIR /app
 COPY app /app
 
 # Install Sanic and other dependencies
-COPY project/requirements /app
+COPY app/requirements.txt /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install fonts for text-in-images
@@ -20,23 +20,11 @@ RUN apt-get update && apt-get install -y fonts-symbola && \
 EXPOSE 8000
 
 # Command to run the application
-#CMD ["python", "ssb.py"]
+
 CMD [\ 
 "sanic",\
-"app.d_stack.init",\
+"d_stack.init",\
 "--host=0.0.0.0",\
 "--port=8000",\
 "--workers=4"\
 ]
-
-# Use Nginx as the second stage
-FROM nginx:stable-alpine as nginx
-
-# Copy Nginx configuration
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy static files for Nginx to serve
-COPY app/static /var/www/
-
-# Expose Nginx port
-EXPOSE 80

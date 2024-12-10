@@ -27,11 +27,11 @@ def load_answers(answer_file: str) -> list:
     return answers
 
 
-def setup_seven_ball(app):
+def setup_sevenball(app):
     
     @app.before_server_start
     async def get_answers(app):
-        answer_file = 'answers.txt' # TODO: Make dynamic
+        answer_file = 'static/sevenball/answers.txt' # TODO: Make dynamic
         answers = []
         try:
             answers += load_answers(answer_file)
@@ -43,7 +43,7 @@ def setup_seven_ball(app):
             answers.append("Sorry, I can't read the future today 😔")
         app.ctx.answers = answers
 
-    @app.websocket("/sevenball_answer", name='sevenball_answer')
+    @app.websocket("/ws/sevenballanswer", name='sevenball_answer')
     async def feed(request: Request, ws: Websocket):
         async for msg in ws:
             logger.info(f'Recieved: {msg}')
@@ -81,7 +81,7 @@ def setup_seven_ball(app):
 
     @app.route('/sevenball', name='spritual_seven_ball')
     async def index(request):
-        with open('ssb.html') as file:
+        with open('static/sevenball/sevenball.html') as file:
             return response.html(file.read())
         
     #@app.route('/reload', name='reload')
