@@ -59,7 +59,7 @@
         }
 
         function request_image(send_str) {
-            const socket = new WebSocket('ws://' + window.location.host + '/answer');
+            const socket = new WebSocket('ws://' + window.location.host + '/sevenball_answer');
             socket.binaryType = "arrayBuffer";
 
             socket.addEventListener('open', () => {
