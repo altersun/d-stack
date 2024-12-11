@@ -82,10 +82,18 @@
     </p>
     <h2>Anthing to show off?</h2>
     <ul>
-        <li>Ask your yes/no questions of the <a href="www.donnybrook.boston/sevenball">Spiritual Seven Ball</a></li>
+        <li>Ask your yes/no questions of the <a id="dynamic-link" href="#">Spiritual Seven Ball</a></li>
         <li>Check out <a href="https://github.com/altersun/demoreel">some of my other stuff</a> on Github</li>
         <li>Add an "/about" to any active URL on this site to learn more about how it was made</li>
     </ul>
   </div>
+  <script>
+    // Dynamically populate the href attribute of the link
+    window.onload = function() {
+      const dynamicLink = document.getElementById('dynamic-link');
+      const baseUrl = window.location.host;
+      dynamicLink.href = `http://${baseUrl}/sevenball`;
+    };
+  </script>
 </body>
 </html>
