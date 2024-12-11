@@ -24,7 +24,7 @@
     
         .container {
           text-align: left;
-          max-width: 600px; /* Limit the width to ensure readable line length */
+          max-width: 620px; /* Limit the width to ensure readable line length */
           width: 90%; /* Adjust for smaller screens */
           line-height: 1.6;
           background: #fff;
@@ -55,44 +55,59 @@
     <h1>Welcome to Donnybrook</h1>
     <h2>Donnywhatnow??</h3>
     <p>
-        A Donnybrook is a <a href="https://www.merriam-webster.com/dictionary/donnybrook">public brawl</a>. 
+        ⚫ A Donnybrook is a <a href="https://www.merriam-webster.com/dictionary/donnybrook">public brawl</a>. 
         It's also the name of the street I live(d?) on when I made this.
     </p>
     <h2>Who are you?</h3>
     <p>
-        I'm David, a <i>mostly</i> embedded software/firmware developer. I made this website because I
+        ⚫ I'm David, a <i>mostly</i> embedded software/firmware developer. I made this website because I
         never made one before and figured I should try. Until now most of my work has been bare-metal C
-        on microcontrollers, C++ and Python on Linux (both embedded and desktop), and a others like bash, 
+        on microcontrollers, C++ and Python on Linux (both embedded and desktop), and a few others like bash, 
         GNU make, lua, moonscript, protocol buffers...enough that I still feel like I'm forgetting something.
         And yet, I never made a proper website before. 
     </p>
     <h2>So do you just code all day?
     </h2>
     <p>
-        Nah, that'd be boring. Part of the fun of embedded is working with a bunch of people who <i>don't</i>
+        ⚫ Nah, that'd be boring. Part of the fun of embedded is working with a bunch of people who <i>don't</i>
         do what you do. Working with electrical engineers, mechanical engineers, UX folk, biologists, 
         audioligists, even registered nurses! I love the flow of ideas from all the disciplines working
         on a project as we bring it to life. I've worked on robots, consumer recording equipment, hearing aids 
         and heart pumps and they've all been great experiences.
     </p>
     <p>
-        ...and between you and me, I'm far enough along that I've been mentoring engineers who got into 
+        ⚫ ...and between you and me, I'm far enough along that I've been mentoring engineers who got into 
         the business after me. Nothing much more rewarding than passing on the tech skills and professional 
         practices I've gained from those before me onto those after.
     </p>
+    <p>
+        ⚫ Please remind me to make a writeup of all learnings from about philosophies about being
+         in management. It's a topic I like discussing.
+    </p>
     <h2>Anthing to show off?</h2>
     <ul>
-        <li>Ask your yes/no questions of the <a id="dynamic-link" href="#">Spiritual Seven Ball</a></li>
+        <li>Source for all the docker/nginx/sanic glue that holds this together <strike>here</strike> TODO</li>
+        <li>Ask your yes/no questions of the <a id="sevenball" href="#">Spiritual Seven Ball</a></li>
         <li>Check out <a href="https://github.com/altersun/demoreel">some of my other stuff</a> on Github</li>
-        <li>Add an "/about" to any active URL on this site to learn more about how it was made</li>
+        <li>See my <a href=https://www.linkedin.com/in/david-alderson-b8185b4/>LinkedIn</a></li>
+        <li>Add an "/<a id="about" href="#">about</a>" to any active URL here to learn more about how it was made</li>
     </ul>
   </div>
   <script>
     // Dynamically populate the href attribute of the link
+    function url_by_host(sub_url) {
+        const base_url = window.location.host;
+        return `http://${base_url}/${sub_url}`;
+    }
     window.onload = function() {
-      const dynamicLink = document.getElementById('dynamic-link');
-      const baseUrl = window.location.host;
-      dynamicLink.href = `http://${baseUrl}/sevenball`;
+      const urls = [
+        "sevenball",
+        "about",
+      ]
+      urls.forEach(populate)
+      function populate(value) {
+        document.getElementById(value).href = url_by_host(value);
+      }
     };
   </script>
 </body>
