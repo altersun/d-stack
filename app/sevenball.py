@@ -77,6 +77,7 @@ def setup_sevenball(app):
                     create_annulus_with_wrapped_text(text=answer)
                 )
                 await ws.send(answer_img)
+                logger.info(f"Sent '{answer}'")
             await ws.send("All done!")
 
     @app.route('/sevenball', name='spritual_seven_ball')
