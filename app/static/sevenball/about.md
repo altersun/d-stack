@@ -7,11 +7,11 @@ It's not a copy, it's *off-brand*. But on that theme why make an off-brand versi
 Honestly it started with a conversation about random number generation with my wife. And it left me thinking about fun things one could do with a real source of random number generation...and fortunately, [random.org](random.org) exits.
 
 ### Methodology
-* The seven ball is hosted in a [Sanic](sanic.dev) app.
+* The seven ball is hosted in a [Sanic](sanic.dev) app
 * All images of the seven ball are drawn at time of need by the [Python Imaging Library](https://github.com/python-pillow/Pillow) or "pillow"
 * The list of answers is stored on the server as a text file which is loaded at app start
 * When a user presses the button asking for an answer to their question, an HTTP request is sent to random.org for a random number. Said random number is used to index into the loaded list of answers. The anwer is then drawn by pillow, the drawing is sent over a websocket, and then rendered as a PNG by the user's browser.
 * Because a websocket is used, the work can be done server-side instead of client-side and no further page loads are required
 
 ## "Off-brand?"
-Yeah since it's not official it can be a bit more rude than the original. Nothing unsafe for work but...don't take the aswers too personally.
+Yeah since it's not official it can be a bit more rude than the original. Nothing unsafe for work but...don't take the answers too personally.
