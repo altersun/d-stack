@@ -76,3 +76,6 @@ If it's live...welcome to [Donnybrook](http://www.donnybrook.boston)!
 * Started in production mode with multiple workers
   * Because of the production mode start, all app init functions must use the decorators `main_process_start`, `before_server_start`, or `after_server_start`
   * Any app can be added to the server by the creation of an app-specific init function which uses the decorators above and others like `route` and `websocket` then calling that init function from the generalized init function in d-stack.py.
+
+# Did ChatGPT write this for you?
+No! But I won't lie, I used it a **lot** to generate *examples* of what I wanted to do. It's a very useful tool that way for learning new skills. That said, I don't even think it could write any kind of distinct web app without a lot of manual tailoring. As useful as ChatGPT is for simple and common coding solutions, it falls apart on complex problems, and has limited "memory" of what its done if used to iterate over ideas to get to a solution.
