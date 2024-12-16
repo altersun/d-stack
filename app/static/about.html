@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About</title>
+<link rel="stylesheet" href="style.css">
+</head><h1>D-Stack</h1>
+<p>I wanted to make a simple web app and kind of fell down a rabbit hole. Ended up making an entire website "from scratch," where I managed all the tool installation and setup by myself.</p>
+<h2>"From Scratch"</h2>
+<p>Not technically. I didn't write my own version of Docker and nginx. But I didn't use Squarespace, either (not to knock it, it's a fine service).</p>
+<h2>"D" Stack?</h2>
+<p>My name is David and my first house is on Donnybrook road. <strong>D</strong> seemed like a fit.</p>
+<h2>What's the stack?</h2>
+<p>Good question! </p>
+<ul>
+<li>nginx (on port 80) runs in a docker container serving static content</li>
+<li>Sanic (python webserver, on port 8000) lives in a second container serving dynamic content and websockets</li>
+<li>nginx proxy forwards requests for dynamic content and websockets to the Sanic app in the second container</li>
+<li>Whole thing runs in Linux, either on my machine for testing or likely a DigitalOcean droplet if on the real internet.</li>
+</ul>
+<h3><em>Two</em> containers?</h3>
+<p>Yeah, I could have just run Sanic by intself but I wanted the power of nginx available if I ever need it. Plus, Sanic can't serve on port 80 without elevated priveledges but nginx can. After doing some reading it seems running each in their own container is more stable than jamming them all into one. Each has their own Dockerfile and both are started together with docker-compose.</p>
+<h3>Why Sanic?</h3>
+<p>Python is my favorite scripting language so a python framework was a no-brainer. Sanic was appealing beacause:</p>
+<ul>
+<li>Easy to learn</li>
+<li>Websocket support</li>
+</ul>
+<h3>Why do you want websockets?</h3>
+<p>Dude why <em>wouldn't</em> you want websockets? Dynamic content serice is rad. There's also socket.io but that seems more hefty than anything I can think to make right now would need.</p>
+<h2>Where can I check out what's there?</h2>
+<p>If it's live...welcome to <a href="http://www.donnybrook.boston">Donnybrook</a>!</p>
+<h2>Technical Details</h2>
+<h3>Docker</h3>
+<pre><code>├── .dockerignore
+├── Makefile
+├── docker-compose.yaml
+├── app
+|   ├── requirements.txt
+│   ├── static
+|   |   └── ...
+|   └── ...
+├── nginx
+│   ├── Dockerfile
+│   └── nginx.conf
+└── sanic
+    └── Dockerfile
+</code></pre>
+<ul>
+<li>nginx and sanic each have their own Dockerfiles</li>
+<li>nginx container:<ul>
+<li>nginx's config file is added to the container upon build</li>
+<li>Exposes port 80 as the host machine's port 80</li>
+<li>nginx listens on port 80</li>
+</ul>
+</li>
+<li>Sanic container:<ul>
+<li>The Python requirements.txt is added to the container upon build</li>
+<li>Uses pip to install python dependencies from the requirements.txt file</li>
+<li>Installs other dependencies via apt</li>
+<li>Exposes port 8000 as the host's machines's port 8000</li>
+<li>Sanic is started in production mode referencing scripts in the app directory</li>
+<li>The Sanic app listens on port 8000</li>
+</ul>
+</li>
+<li>Both Dockerfiles are reference in the docker-compose.yaml file</li>
+<li>The whole system can be started in the background with <code>docker-compose up --detach</code></li>
+</ul>
+<h3>nginx</h3>
+<ul>
+<li>nginx is confured to serve static content itself</li>
+<li>nginx has a location rule that uses regex so that any URL /URL serves app/static/URL.html</li>
+<li>TH\here is another rule for /URL/about to serve a page that describes the app of that page.<ul>
+<li>The "about.html" is generatated from markdown by Python-markdown (I am not good at html yet)</li>
+</ul>
+</li>
+<li>Dynamic content is proxy forwarded to the Sanic container</li>
+<li>There is a specifc rule for websockets: /ws/URL is forwarded to the Sanic container<ul>
+<li>...by forwarding it to port 8000 of the host machine</li>
+</ul>
+</li>
+</ul>
+<h3>Sanic</h3>
+<ul>
+<li>Started in production mode with multiple workers</li>
+<li>Because of the production mode start, all app init functions must use the decorators <code>main_process_start</code>, <code>before_server_start</code>, or <code>after_server_start</code></li>
+<li>Any app can be added to the server by the creation of an app-specific init function which uses the decorators above and others like <code>route</code> and <code>websocket</code> then calling that init function from the generalized init function in d-stack.py.</li>
+</ul>
+<h1>Did ChatGPT write this for you?</h1>
+<p>No! But I won't lie, I used it a <strong>lot</strong> to generate <em>examples</em> of what I wanted to do. It's a very useful tool that way for learning new skills. That said, I don't even think it could write any kind of distinct web app without a lot of manual tailoring. As useful as ChatGPT is for simple and common coding solutions, it falls apart on complex problems, and has limited "memory" of what its done if used to iterate over ideas to get to a solution.</p>

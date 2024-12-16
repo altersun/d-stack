@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About</title>
+<link rel="stylesheet" href="../style.css">
+</head><h1>Your Future Awaits!</h1>
+<p>The Spiritual Seven Ball is a prognosticant toy that is kind of an off-brand version of a <a href="https://en.wikipedia.org/wiki/Magic_8_Ball">well-established classic</a>. You hold a yes/no question in your mind or speak it aloud, then shake the ball and view the helpful answer revealed in the viewing window.</p>
+<h2>If there's already such a toy, why make a copy?</h2>
+<p>It's not a copy, it's <em>off-brand</em>. But on that theme why make an off-brand version when a few faithful recreations of the real thing already exist online?</p>
+<p>Honestly it started with a conversation about random number generation with my wife. And it left me thinking about fun things one could do with a real source of random number generation...and fortunately, <a href="random.org">random.org</a> exits.</p>
+<h3>Methodology</h3>
+<ul>
+<li>The seven ball is hosted in a <a href="sanic.dev">Sanic</a> app.</li>
+<li>All images of the seven ball are drawn at time of need by the <a href="https://github.com/python-pillow/Pillow">Python Imaging Library</a> or "pillow"</li>
+<li>The list of answers is stored on the server as a text file which is loaded at app start</li>
+<li>When a user presses the button asking for an answer to their question, an HTTP request is sent to random.org for a random number. Said random number is used to index into the loaded list of answers. The anwer is then drawn by pillow, the drawing is sent over a websocket, and then rendered as a PNG by the user's browser.</li>
+<li>Because a websocket is used, the work can be done server-side instead of client-side and no further page loads are required</li>
+</ul>
+<h2>"Off-brand?"</h2>
+<p>Yeah since it's not official it can be a bit more rude than the original. Nothing unsafe for work but...don't take the aswers too personally.</p>
