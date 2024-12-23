@@ -1,11 +1,13 @@
 from sanic import Sanic, response, Request, Websocket
 from sanic.log import logger
 
+from guessy import setup_guessy
 from sevenball import setup_sevenball
 
 
 def init():
     app = Sanic("D-Stack")
+    setup_guessy(app)
     setup_sevenball(app)
     return app
 

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I'll guess your number</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        #message {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div id="message">Wait for it...</div>
+    <button id="higher" disabled>Higher</button>
+    <button id="correct" disabled>Correct</button>
+    <button id="lower" disabled>Lower</button>
+
+    <script>
+        const urlPath = window.location.pathname;
+        const match = urlPath.match(/\/guessy(?:\/(\d{1,4}))?/);
+        
+        let number = 100; // Default value if no number is provided
+        if (match && match[1]) {
+            number = parseInt(match[1], 10);
+        }
+
+        if (number < 10 || number > 1000) {
+            document.getElementById("message").innerText = "Number out of range (10-1000).";
+            throw new Error("Number out of range.");
+        }
+
+        const wsUrl = `ws://${window.location.host}/ws/guessy/${number}`;
+        let sessionKey = "";
+
+        const messageDiv = document.getElementById("message");
+        const buttons = {
+            higher: document.getElementById("higher"),
+            correct: document.getElementById("correct"),
+            lower: document.getElementById("lower")
+        };
+
+        function toggleButtons(state) {
+            Object.values(buttons).forEach(button => button.disabled = !state);
+        }
+
+        function handleResponse(response) {
+            console.log(`Received: ${response}`)
+            const [key, integerResponse] = response.split(" ");
+            sessionKey = key;
+            messageDiv.innerText = integerResponse;
+            toggleButtons(true);
+        }
+
+        function sendMessage(buttonText) {
+            const ws = new WebSocket(wsUrl);
+            ws.onopen = () => {
+                ws.send(`${sessionKey} ${buttonText.toLowerCase()}`);
+            };
+            ws.onmessage = (event) => {
+                handleResponse(event.data);
+                ws.close();
+            };
+        }
+
+        const ws = new WebSocket(wsUrl);
+        ws.onopen = () => {
+            ws.send("START");
+        };
+
+        ws.onmessage = (event) => {
+            handleResponse(event.data);
+            ws.close();
+        };
+
+        Object.keys(buttons).forEach(buttonKey => {
+            buttons[buttonKey].addEventListener("click", () => {
+                toggleButtons(false);
+                sendMessage(buttons[buttonKey].innerText);
+            });
+        });
+    </script>
+</body>
+</html>
