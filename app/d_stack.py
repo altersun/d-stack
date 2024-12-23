@@ -1,12 +1,14 @@
 from sanic import Sanic
 from sanic.log import logger
 
+from guessy import setup_guessy
 from sevenball import setup_sevenball
 from streetsigner import setup_streetsigner
 
 
 def init():
     app = Sanic("D-Stack")
+    setup_guessy(app)
     setup_sevenball(app)
     setup_streetsigner(app)
     return app

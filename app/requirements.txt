@@ -1,4 +1,4 @@
 aiohttp==3.9.0
 pillow==10.4.0
-sanic==23.6.0 
+sanic==24.6.0 
 websockets==14.1
