@@ -1,16 +1,22 @@
 import asyncio
 from dataclasses import dataclass
+from multiprocessing import Process
+import os
 from sanic import Sanic, response, Request, Websocket
 from sanic.log import logger
 import random_dot_org as rdo
 import time
 from typing import AsyncGenerator
 
-#SessionData = namedtuple('SessionData', ['generator', 'last_access'])
+
 @dataclass
 class SessionData:
     generator: AsyncGenerator
     last_access: float
+
+
+
+
 
 
 async def guess_generator(maximum: int):
@@ -20,13 +26,16 @@ async def guess_generator(maximum: int):
         unequal =  bottom != top
         print(f"Bottom: {bottom} Top: {top}")
         guess = await rdo.get_random_int(top, bottom) if unequal else top
+        guess = 1 if guess < 1 else guess
         response = yield guess
         if response == 'higher':
             bottom = (guess + 1) if unequal else bottom
         if response == 'lower':
             top = guess - 1 if unequal else top
+            
         if response == 'correct':
             break
+        logger.info(f"Bottom {bottom} Top {top}")
 
 async def test():
     import sys
@@ -62,10 +71,42 @@ async def generate_session_key(app):
             key += 1
         yield key
 
+
+async def data_store_client_handler(reader, writer):
+    try:
+        data = await reader.read(100)
+        message = data.decode()
+        logger.info(f"Received: {message}")
+        
+        response = f"Echo: {message}"
+        writer.write(response.encode())
+        await writer.drain()
+        logger.info(f"Sent: {response}")
+    except Exception as e:
+        logger.exception(f"Error: {e}")
+    finally:
+        writer.close()
+        await writer.wait_closed()
+
+
+async def data_store_server(socket_path: str):
+    # Remove the socket file if it exists
+    if os.path.exists(socket_path):
+        os.remove(socket_path)
+
+    server = await asyncio.start_unix_server(data_store_client_handler, path=socket_path)
+    logger.info(f"Server listening on {socket_path}")
+    async with server:
+        await server.serve_forever()
+
+
 def setup_guessy(app):
+    spath = './guession_data_mgr.uds'
+    data_store_process = Process(target=data_store_server, kwargs={'socket_path': spath})
 
     @app.before_server_start
     async def setup_session_store(app, loop):
+        data_store_process.start()
         app.ctx.guession_store = {}
         app.ctx.guession_keygen = generate_session_key(app)
         loop.create_task(manage_session_store(app))
@@ -115,6 +156,11 @@ def setup_guessy(app):
     @app.route("/guessy", name="guessy_generic")
     async def guessserver_g(request):
         return await guessserver(request, number=100)
+    
+    @app.main_process_stop
+    async def guessy_teardown():
+        data_store_process.terminate()
+        
 
 if __name__ == '__main__':
     asyncio.run(test())
