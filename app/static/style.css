@@ -6,7 +6,7 @@ body {
     margin: 0;
     padding: 20px;
     line-height: 1.6;
-    text-align: right;        /* Right-justify text */
+    text-align: left;        /* Right-justify text */
 }
 
 /* Center the main content */
