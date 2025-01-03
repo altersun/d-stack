@@ -1,69 +1,53 @@
-import argparse
-from PIL import Image, ImageDraw, ImageFont
+import io
+from PIL import Image
+from sanic import Sanic, response, Request, Websocket
+from sanic.log import logger
 
-def generate_street_sign(street_name, street_type, output_file="streetsign.png"):
-    # Convert to uppercase
-    street_name = street_name.upper()
-    street_type = street_type.upper()
+from street_sign_gen import generate_street_sign_raw
 
-    # Base dimensions and colors
-    sign_height = 200
-    base_sign_width = 800
-    background_color = "green"
-    text_color = "white"
-    border_color = "white"
-    border_thickness = 5
 
-    # Padding and font sizes
-    padding = 20
-    name_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 120)
-    type_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 60)
+STREET_DEFAULT = generate_street_sign_raw("YOUR", "ST")
+STREET_BAD = generate_street_sign_raw("OHNOITWENTWRO", "NG")
+STREET_WAIT = generate_street_sign_raw("WAITFORIT..", "..")
 
-    # Calculate text sizes
-    name_bbox = name_font.getbbox(street_name)
-    name_width, name_height = name_bbox[2], name_bbox[3]
+def png_encode_image(image: Image) -> bytes:
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    png_data = buffer.getvalue()
+    buffer.close()
+    return png_data
 
-    type_bbox = type_font.getbbox(street_type)
-    type_width, type_height = type_bbox[2], type_bbox[3]
 
-    # Calculate required sign width
-    total_text_width = name_width + type_width + padding * 3  # Account for spacing
-    sign_width = max(base_sign_width, total_text_width)
+def setup_streety(app):
+    
+    @app.websocket("/ws/streety", name='ws_streety')
+    async def feed(request: Request, ws: Websocket):
+        async for msg in ws:
+            logger.info(f'Recieved: {msg}')
+            if msg == "INITIAL":
+                logger.info("Sending initial image")
+                encoded_street = png_encode_image(STREET_DEFAULT)
+                await ws.send(encoded_street)
 
-    # Create an image with a white border
-    image = Image.new("RGB", (sign_width, sign_height), border_color)
-    draw = ImageDraw.Draw(image)
+            else:    
+                # Tell the requester to sit tight
+                wait_for_it = png_encode_image(STREET_WAIT)
+                await ws.send(wait_for_it)
+                try:
+                    name, type = msg.split(' ')
+                    street_img = png_encode_image(
+                        generate_street_sign_raw(name, type)
+                    )
+                    await ws.send(street_img)
+                    logger.info(f"Sent '{name}' '{type}'")
+                except:
+                    logger.exception("Sending backup image")
+                    await ws.send(png_encode_image(STREET_BAD))
 
-    # Draw the green rectangle (inner area)
-    draw.rectangle(
-        [border_thickness, border_thickness, sign_width - border_thickness, sign_height - border_thickness],
-        fill=background_color
-    )
 
-    # Calculate positions for the text
-    name_x = border_thickness + padding
-    name_y = (sign_height - name_height) // 2
-    type_x = name_x + name_width + padding
-    type_y = name_y + (name_height - type_height)
-
-    # Draw the text
-    draw.text((name_x, name_y), street_name, font=name_font, fill=text_color)
-    draw.text((type_x, type_y), street_type, font=type_font, fill=text_color)
-
-    # Save the image
-    image.save(output_file)
-    print(f"Street sign saved as {output_file} (width: {sign_width}px)")
-
-def main():
-    parser = argparse.ArgumentParser(description="Generate a street sign image.")
-    parser.add_argument("street_name", type=str, help="The name of the street.")
-    parser.add_argument("street_type", type=str, help="The type of the street (e.g., RD, ST).")
-    parser.add_argument(
-        "-o", "--output", type=str, default="streetsign.png", help="Output file name (default: streetsign.png)."
-    )
-
-    args = parser.parse_args()
-    generate_street_sign(args.street_name, args.street_type, args.output)
-
-if __name__ == "__main__":
-    main()
+    @app.route('/streety', name='streety')
+    async def index(request):
+        with open('static/streety/streety.html') as file:
+            return response.html(file.read())
+        
+        

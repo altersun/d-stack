@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAKIN IT TO THE STREETS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            background-color: #96ece7;
+        }
+        #display {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <img id="receivedImage" alt="YOUR st" style="max-width: 70%;">
+    <h1>Street Signer</h1>
+    <h3>Type in your STREET NAME and select your STREET TYPE</h3>
+    <div class="form-container">
+        <div class="form-group">
+          <label for="textInput">Enter text:</label>
+          <input type="text" id="textInput" placeholder="STREETNAME">
+        </div>
+        <div class="form-group" id="radioGroup">
+          <p>Select an option:</p>
+        </div>
+      </div>
+    <button id="fetchButton">Click for sign</button>
+
+
+    <script>
+        function set_button_enabled(setting) {
+            button = document.getElementById('fetchButton');
+            if (setting) {
+                button.disabled = false;
+                button.style.backgroundColor = "#0056b3";
+            } else {
+                button.disabled = true;
+                button.style.backgroundColor = "#afc3d8";
+            }
+        }
+
+        function request_image(send_str) {
+            const socket = new WebSocket('ws://' + window.location.host + '/ws/streety');
+            socket.binaryType = "arrayBuffer";
+
+            socket.addEventListener('open', () => {
+                console.log('WebSocket connection established');
+                socket.send(send_str); // Send a message to request the string
+                set_button_enabled(false)
+            });
+
+            // Handle incoming messages
+            socket.addEventListener('message', (event) => {
+                console.log('Received message type: ', Object.prototype.toString.call(event.data))
+                if (typeof event.data === "string") {
+                    console.log("String recieved!", event.data)
+                    socket.close(); // Close the WebSocket after receiving the message
+                    console.log('WebSocket connection closed');
+                } else if (event.data instanceof Blob) {
+                    console.log("Image received!")
+                    const arrayBuffer = event.data;
+                    const blob = new Blob([arrayBuffer], { type: "image/png" });
+                    const url = URL.createObjectURL(blob);
+                    document.getElementById("receivedImage").src = url;
+                    socket.close();
+                }
+            });
+
+            // Handle errors
+            socket.addEventListener('error', (error) => {
+                console.error('WebSocket error:', error);
+                socket.close(); // Ensure WebSocket is closed on error
+                button = document.getElementById('fetchButton');
+                set_button_enabled(true)
+            });
+
+            // Handle WebSocket close event
+            socket.addEventListener('close', () => {
+                console.log('WebSocket connection closed by server or client.');
+                set_button_enabled(true)
+            });
+        }
+
+        window.onload = function() {
+            // List of options for the radio buttons
+            const options = ['ST', 'RD', 'LN'];
+
+            // Reference to the radio group container
+            const radioGroup = document.getElementById('radioGroup');
+
+            // Dynamically generate radio buttons
+            options.forEach((option, index) => {
+                const label = document.createElement('label');
+                const radio = document.createElement('input');
+                
+                radio.type = 'radio';
+                radio.name = 'option';
+                radio.value = option;
+                label.appendChild(radio);
+                label.appendChild(document.createTextNode(` ${option}`));
+                
+                // Add a line break after each option
+                radioGroup.appendChild(label);
+                radioGroup.appendChild(document.createElement('br'));
+            });
+
+            request_image("INITIAL");
+        };
+
+        document.getElementById('fetchButton').addEventListener('click', () => {
+            request_image("Durf rd");
+        });
+
+    </script>
+</body>
+</html>
+
