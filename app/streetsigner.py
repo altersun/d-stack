@@ -18,9 +18,9 @@ def png_encode_image(image: Image) -> bytes:
     return png_data
 
 
-def setup_streety(app):
+def setup_streetsigner(app):
     
-    @app.websocket("/ws/streety", name='ws_streety')
+    @app.websocket("/ws/streetsigner", name='ws_streetsigner')
     async def feed(request: Request, ws: Websocket):
         async for msg in ws:
             logger.info(f'Recieved: {msg}')
@@ -35,6 +35,8 @@ def setup_streety(app):
                 await ws.send(wait_for_it)
                 try:
                     name, type = msg.split(' ')
+                    if len(name) == 0:
+                        name = 'EMPTYNAME'
                     street_img = png_encode_image(
                         generate_street_sign_raw(name, type)
                     )
@@ -43,11 +45,13 @@ def setup_streety(app):
                 except:
                     logger.exception("Sending backup image")
                     await ws.send(png_encode_image(STREET_BAD))
+            await ws.send("All done!")
+            
 
 
-    @app.route('/streety', name='streety')
+    @app.route('/streetsigner', name='streetsigner')
     async def index(request):
-        with open('static/streety/streety.html') as file:
+        with open('static/streetsigner/streetsigner.html') as file:
             return response.html(file.read())
         
         

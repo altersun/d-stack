@@ -1,14 +1,14 @@
-from sanic import Sanic, response, Request, Websocket
+from sanic import Sanic
 from sanic.log import logger
 
 from sevenball import setup_sevenball
-from streety import setup_streety
+from streetsigner import setup_streetsigner
 
 
 def init():
     app = Sanic("D-Stack")
     setup_sevenball(app)
-    setup_streety(app)
+    setup_streetsigner(app)
     return app
 
 

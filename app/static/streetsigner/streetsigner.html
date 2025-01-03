@@ -41,22 +41,29 @@
     </style>
 </head>
 <body>
-    <img id="receivedImage" alt="YOUR st" style="max-width: 70%;">
-    <h1>Street Signer</h1>
+    <h1>Streetsigner</h1>
     <h3>Type in your STREET NAME and select your STREET TYPE</h3>
     <div class="form-container">
         <div class="form-group">
-          <label for="textInput">Enter text:</label>
-          <input type="text" id="textInput" placeholder="STREETNAME">
+          <p>Street Name</p>
+          <input type="text" id="streetname" placeholder="STREETNAME">
         </div>
-        <div class="form-group" id="radioGroup">
-          <p>Select an option:</p>
+        <div class="form-group" id="type_radio">
+          <p>Street Type</p>
         </div>
       </div>
+    <br>
     <button id="fetchButton">Click for sign</button>
-
+    <br>
+    <img id="receivedImage" alt="YOUR st" style="max-width: 70%;">
+    <br>
+    <button id="saveButton" disabled>Click to save your sign</button>
 
     <script>
+        // Save button handling
+        //let receivedImageUrl = null;
+        const saveButton = document.getElementById("saveButton");
+
         function set_button_enabled(setting) {
             button = document.getElementById('fetchButton');
             if (setting) {
@@ -69,7 +76,7 @@
         }
 
         function request_image(send_str) {
-            const socket = new WebSocket('ws://' + window.location.host + '/ws/streety');
+            const socket = new WebSocket('ws://' + window.location.host + '/ws/streetsigner');
             socket.binaryType = "arrayBuffer";
 
             socket.addEventListener('open', () => {
@@ -89,9 +96,20 @@
                     console.log("Image received!")
                     const arrayBuffer = event.data;
                     const blob = new Blob([arrayBuffer], { type: "image/png" });
-                    const url = URL.createObjectURL(blob);
-                    document.getElementById("receivedImage").src = url;
-                    socket.close();
+                    receivedImageUrl = URL.createObjectURL(blob);
+                    document.getElementById("receivedImage").src = receivedImageUrl;
+
+                    
+                    if (saveButton.disabled == true) {
+                        saveButton.disabled = false;
+                        // Set up the download functionality)
+                        saveButton.addEventListener("click", () => {
+                            const link = document.createElement("a");
+                            link.href = receivedImageUrl;
+                            link.download = "street_sign.png";
+                            link.click();
+                        });
+                    }
                 }
             });
 
@@ -112,10 +130,10 @@
 
         window.onload = function() {
             // List of options for the radio buttons
-            const options = ['ST', 'RD', 'LN'];
+            const options = ['ST', 'RD', 'LN', 'AVE', 'CT'];
 
             // Reference to the radio group container
-            const radioGroup = document.getElementById('radioGroup');
+            const radioGroup = document.getElementById('type_radio');
 
             // Dynamically generate radio buttons
             options.forEach((option, index) => {
@@ -125,6 +143,12 @@
                 radio.type = 'radio';
                 radio.name = 'option';
                 radio.value = option;
+
+                // Set the first option as selected by default
+                if (index === 0) {
+                    radio.checked = true;
+                }
+
                 label.appendChild(radio);
                 label.appendChild(document.createTextNode(` ${option}`));
                 
@@ -134,11 +158,16 @@
             });
 
             request_image("INITIAL");
+            set_button_enabled(true)
         };
 
         document.getElementById('fetchButton').addEventListener('click', () => {
-            request_image("Durf rd");
+            const name = document.getElementById("streetname").value.trim();
+            const type = document.querySelector('input[name="option"]:checked').value;
+            request_image(`${name} ${type}`);
         });
+
+        
 
     </script>
 </body>
