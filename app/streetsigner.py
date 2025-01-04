@@ -34,7 +34,7 @@ def setup_streetsigner(app):
                 wait_for_it = png_encode_image(STREET_WAIT)
                 await ws.send(wait_for_it)
                 try:
-                    name, type = msg.split(' ')
+                    name, type = msg.rsplit(' ', 1)
                     if len(name) == 0:
                         name = 'EMPTYNAME'
                     street_img = png_encode_image(
