@@ -14,9 +14,10 @@
     
         body {
           font-family: Arial, sans-serif;
-          background-color: #f9f9f9;
+          background-color: #8fd68c;
           color: #333;
           display: flex;
+          flex-direction: column;
           justify-content: center;
           align-items: center;
           min-height: 100vh;
@@ -50,7 +51,11 @@
         }
       </style>
 </head>
+
 <body>
+  <img src="donnybrookrd.png" alt="Welcome to Donnybrook" 
+  style="width: 70%;">
+  <br>
   <div class="container">
     <h1>Welcome to Donnybrook</h1>
     <h2>Donnywhatnow??</h3>
@@ -58,13 +63,22 @@
         ⚫ A Donnybrook is a <a href="https://www.merriam-webster.com/dictionary/donnybrook">public brawl</a>. 
         It's also the name of the street I live(d?) on when I made this.
     </p>
+    <h2>What's here?</h2>
+    <ul>  
+        <li>Source for all the docker/nginx/sanic glue that holds this together <a href="https://github.com/altersun/d-stack">here</a></li>
+        <li>Generate your own street sign like the one above with <a id="streetsigner" href="#">the Streetsigner</a></li>
+        <li>Ask your yes/no questions of the <a id="sevenball" href="#">Spiritual Seven Ball</a></li>
+        <li>Add an "/<a id="about" href="#">about</a>" to any active URL here to learn more about how it was made</li>
+        <li>Check out <a href="https://github.com/altersun/demoreel">some of my other stuff</a> on Github</li>
+        <li>See my <a href=https://www.linkedin.com/in/david-alderson-b8185b4/>LinkedIn</a></li>
+    </ul>
     <h2>Who are you?</h3>
     <p>
         ⚫ I'm David, a <i>mostly</i> embedded software/firmware developer. I made this website because I
         never made one before and figured I should try. Until now most of my work has been bare-metal C
         on microcontrollers, C++ and Python on Linux (both embedded and desktop), and a few others like bash, 
         GNU make, lua, moonscript, protocol buffers...enough that I still feel like I'm forgetting something.
-        And yet, I never made a proper website before. 
+        And yet, I never made a proper website before this. 
     </p>
     <h2>So do you just code all day?
     </h2>
@@ -84,14 +98,7 @@
         ⚫ Please remind me to make a writeup of all learnings from about philosophies about being
          in management. It's a topic I like discussing.
     </p>
-    <h2>Anything to show off?</h2>
-    <ul>  
-        <li>Source for all the docker/nginx/sanic glue that holds this together <a href="https://github.com/altersun/d-stack">here</a></li>
-        <li>Ask your yes/no questions of the <a id="sevenball" href="#">Spiritual Seven Ball</a></li>
-        <li>Check out <a href="https://github.com/altersun/demoreel">some of my other stuff</a> on Github</li>
-        <li>See my <a href=https://www.linkedin.com/in/david-alderson-b8185b4/>LinkedIn</a></li>
-        <li>Add an "/<a id="about" href="#">about</a>" to any active URL here to learn more about how it was made</li>
-    </ul>
+
   </div>
   <script>
     // Dynamically populate the href attribute of the link
@@ -101,6 +108,7 @@
     }
     window.onload = function() {
       const urls = [
+        "streetsigner",
         "sevenball",
         "about",
       ]

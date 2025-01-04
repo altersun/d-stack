@@ -25,7 +25,7 @@ Python is my favorite scripting language so a python framework was a no-brainer.
 * Websocket support
 
 ### Why do you want websockets?
-Dude why *wouldn't* you want websockets? Dynamic content serice is rad. There's also socket.io but that seems more hefty than anything I can think to make right now would need.
+Dude why *wouldn't* you want websockets? Dynamic content service is rad. There's also socket.io but that seems more hefty than anything I can think to make right now would need.
 
 ## Where can I check out what's there?
 If it's live...welcome to [Donnybrook](http://www.donnybrook.boston)!

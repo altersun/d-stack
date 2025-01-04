@@ -13,8 +13,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Install fonts for text-in-images
 # Using Symbola_hint for emoji support
-RUN apt-get update && apt-get install -y fonts-symbola && \
-     rm -rf /var/lib/apt/lists/*
+# Using Dejavu for SERIOUS BUSINESS
+RUN apt-get update \
+     && apt-get install -y fonts-symbola \
+     && apt-get install -y fonts-dejavu-core \
+     && rm -rf /var/lib/apt/lists/*
 
 # Expose the port the app runs on
 EXPOSE 8000
