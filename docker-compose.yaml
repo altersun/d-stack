@@ -7,8 +7,22 @@ services:
       dockerfile: nginx/Dockerfile
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./certs:/etc/letsencrypt
     depends_on:
       - sanic_app
+      - certbot
+
+  certbot:
+    build:
+      context: ./
+      dockerfile: certbot/Dockerfile
+    volumes:
+      - ./certs:/etc/letsencrypt
+      - ./nginx/ssl:/var/www/certbot
 
   sanic_app:
     build:

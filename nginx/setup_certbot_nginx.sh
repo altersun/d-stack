@@ -15,7 +15,8 @@ certbot --nginx \
     --agree-tos \
     --non-interactive \
     -m david.james.alderson@gmail.com \
-    -d www.donnybrook.boston
+    -d www.donnybrook.boston \
+    -v
     # -d donnybrook.boston \
 
 # Auto renew the cert
