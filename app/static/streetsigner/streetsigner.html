@@ -76,7 +76,7 @@
         }
 
         function request_image(send_str) {
-            const socket = new WebSocket('ws://' + window.location.host + '/ws/streetsigner');
+            const socket = new WebSocket('wss://' + window.location.host + '/ws/streetsigner');
             socket.binaryType = "arrayBuffer";
 
             socket.addEventListener('open', () => {
@@ -130,7 +130,7 @@
 
         window.onload = function() {
             // List of options for the radio buttons
-            const options = ['ST', 'RD', 'LN', 'AVE', 'CT', 'PL'];
+            const options = ['ST', 'RD', 'LN', 'AVE', 'CT', 'PL', 'BLD'];
 
             // Reference to the radio group container
             const radioGroup = document.getElementById('type_radio');

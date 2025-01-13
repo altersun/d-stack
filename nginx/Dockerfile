@@ -13,5 +13,5 @@ COPY nginx/ssl/selfsigned.key /etc/nginx/ssl/selfsigned.key
 COPY nginx/ssl/dhparam.pem /etc/nginx/ssl/dhparam.pem
 
 # Expose Nginx port
-EXPOSE 80
+EXPOSE 80 443
 
