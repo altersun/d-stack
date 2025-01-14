@@ -60,8 +60,15 @@
     <button id="saveButton" disabled>Click to save your sign</button>
 
     <script>
+        function isSecure() {
+            return window.location.protocol === 'https:';
+        }
+
+        function wsCorrectProtocol(baseWsUrl) {
+            return isSecure() ? baseWsUrl.replace('ws:', 'wss:') : baseWsUrl;
+        }
+        
         // Save button handling
-        //let receivedImageUrl = null;
         const saveButton = document.getElementById("saveButton");
 
         function set_button_enabled(setting) {
@@ -76,7 +83,7 @@
         }
 
         function request_image(send_str) {
-            const socket = new WebSocket('wss://' + window.location.host + '/ws/streetsigner');
+            const socket = new WebSocket(wsCorrectProtocol('ws://' + window.location.host + '/ws/streetsigner'));
             socket.binaryType = "arrayBuffer";
 
             socket.addEventListener('open', () => {
