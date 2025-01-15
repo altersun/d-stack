@@ -5,7 +5,7 @@ services:
     image: certbot/certbot
     volumes:
       - ./certs/local/output:/etc/letsencrypt
-    entrypoint: ["certbot", "certonly", "--standalone", "--agree-tos", "--no-eff-email", "-m", "david.james.alderson@gmail.com", "-d", "donnybrook.boston"]
+    entrypoint: ["certbot", "certonly", "--standalone", "--agree-tos", "--no-eff-email", "-m", "david.james.alderson@gmail.com", "-d", "www.donnybrook.boston"]
 
   nginx:
     build:
