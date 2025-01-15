@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certs/local/output:/etc/letsencrypt
+    entrypoint: ["certbot", "certonly", "--standalone", "--agree-tos", "--no-eff-email", "-m", "david.james.alderson@gmail.com", "-d", "donnybrook.boston"]
+
+  nginx:
+    build:
+      context: ./
+      dockerfile: nginx/Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./certs/local/output:/etc/nginx/ssl
+      - ./nginx/scripts:/scripts
+    depends_on:
+      - certbot
+      - sanic_app
+    command: ["nginx", "-g", "daemon off;"]
+    
+  sanic_app:
+    build:
+      context: ./
+      dockerfile: sanic/Dockerfile
+    ports:
+      - "8000:8000"

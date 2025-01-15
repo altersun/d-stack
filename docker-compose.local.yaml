@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  nginx:
+    build:
+      context: ./
+      dockerfile: nginx/Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./certs/local/output:/etc/nginx/ssl
+      - ./nginx/scripts:/scripts
+    depends_on:
+      - sanic_app
+    command: ["sh", "-c", "if [ ! -f /etc/nginx/ssl/server.crt ]; then sh /scripts/gen_local_certs.sh; fi && nginx -g 'daemon off;'"]
+    
+
+  sanic_app:
+    build:
+      context: ./
+      dockerfile: sanic/Dockerfile
+    ports:
+      - "8000:8000"
+
+
