@@ -5,19 +5,21 @@ services:
     image: certbot/certbot
     volumes:
       - ./certs/local/output:/etc/letsencrypt/live
-      - ./certbot/scripts/check-for-certs.sh:/bin/check-for-certs.sh
+      - ./certbot/scripts/check-for-certs.sh:/bin/create-and-copy-certs.sh
     entrypoint: >
-      certbot certonly --standalone --agree-tos --no-eff-email 
-      -mdavid.james.alderson@gmail.com -d www.donnybrook.boston 
-      --keep-until-expiring --reuse-key 
-      --cert-path /etc/letsencrypt/live
-      --key-path /etc/letsencrypt/live
-      --deploy-hook "/bin/check-for-certs.sh"
-    command: >
-      ln -sf /etc/letsencrypt/live/www.donnybrook.boston/fullchain.pem
-      /etc/letsencrypt/live/fullchain.pem &&
-      ln -sf /etc/letsencrypt/live/www.donnybrook.boston/privkey.pem
-      /etc/letsencrypt/live/privkey.pem
+      /bin/create-and-copy-certs.sh www.donnybrook.boston
+ #   entrypoint: >
+ #     certbot certonly --standalone --agree-tos --no-eff-email 
+ #     -m david.james.alderson@gmail.com -d www.donnybrook.boston 
+ #     --keep-until-expiring --reuse-key 
+ #     --cert-path /etc/letsencrypt/live
+ #     --key-path /etc/letsencrypt/live
+ #     --deploy-hook "/bin/check-for-certs.sh"
+ #   command: >
+ #     ln -sf /etc/letsencrypt/live/www.donnybrook.boston/fullchain.pem
+ #     /etc/letsencrypt/live/fullchain.pem &&
+ #     ln -sf /etc/letsencrypt/live/www.donnybrook.boston/privkey.pem
+ #     /etc/letsencrypt/live/privkey.pem
     ports:
       - "80:80"
 
