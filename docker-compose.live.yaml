@@ -4,8 +4,14 @@ services:
   certbot:
     image: certbot/certbot
     volumes:
-      - ./certs/local/output:/etc/letsencrypt
-    entrypoint: ["certbot", "certonly", "--standalone", "--agree-tos", "--no-eff-email", "-m", "david.james.alderson@gmail.com", "-d", "www.donnybrook.boston"]
+      - ./certs/local/output:/etc/letsencrypt/live
+    #entrypoint: ["certbot", "certonly", "--standalone", "--agree-tos", "--no-eff-email", "-m", "david.james.alderson@gmail.com", "-d", "www.donnybrook.boston"]
+    entrypoint: >
+      certbot certonly --standalone --agree-tos --no-eff-email 
+      -mdavid.james.alderson@gmail.com -d www.donnybrook.boston 
+      --keep-until-expiring --reuse-key 
+      --cert-path /etc/letsencrypt/live
+      --key-path /etc/letsencrypt/live
     ports:
       - "80:80"
 
@@ -21,7 +27,7 @@ services:
       - ./nginx/scripts:/scripts
     depends_on:
       certbot:
-        condition: service_completed_successfully
+        condition: service_completed_successfulrely
       sanic_app:
         condition: service_started
     command: ["nginx", "-g", "daemon off;"]
