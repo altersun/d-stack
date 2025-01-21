@@ -13,7 +13,7 @@ services:
       - ./nginx/scripts:/scripts
     depends_on:
       - sanic_app
-    command: ["sh", "-c", "if [ ! -f /etc/nginx/ssl/server.crt ]; then sh /scripts/gen_local_certs.sh; fi && nginx -g 'daemon off;'"]
+    command: ["sh", "-c", "if [ ! -f /etc/nginx/ssl/fullchain.pem ]; then sh /scripts/gen_local_certs.sh; fi && nginx -g 'daemon off;'"]
     
 
   sanic_app:

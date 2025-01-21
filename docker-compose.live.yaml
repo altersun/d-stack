@@ -8,11 +8,6 @@ services:
     entrypoint: ["certbot", "certonly", "--standalone", "--agree-tos", "--no-eff-email", "-m", "david.james.alderson@gmail.com", "-d", "www.donnybrook.boston"]
     ports:
       - "80:80"
-    #healthcheck:
-    #  test: ["CMD", "test", "-f", "/etc/letsencrypt/yourdomain.com/fullchain.pem"]
-    #  interval: 5s
-    #  timeout: 3s
-    #  retries: 3
 
   nginx:
     build:
@@ -26,7 +21,7 @@ services:
       - ./nginx/scripts:/scripts
     depends_on:
       certbot:
-        condition: service_completed_successfuly
+        condition: service_completed_successfully
       sanic_app:
         condition: service_started
     command: ["nginx", "-g", "daemon off;"]
