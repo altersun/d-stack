@@ -6,6 +6,11 @@ services:
     volumes:
       - ./certs/local/output:/etc/letsencrypt
     entrypoint: ["certbot", "certonly", "--standalone", "--agree-tos", "--no-eff-email", "-m", "david.james.alderson@gmail.com", "-d", "www.donnybrook.boston"]
+    healthcheck:
+      test: ["CMD", "test", "-f", "/etc/letsencrypt/yourdomain.com/fullchain.pem"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
 
   nginx:
     build:
@@ -21,7 +26,6 @@ services:
       certbot:
         condition: service_healthy
       sanic_app:
-        condition: service_healthy
     command: ["nginx", "-g", "daemon off;"]
     
   sanic_app:
