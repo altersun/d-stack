@@ -2,19 +2,18 @@ version: '3.8'
 
 services:
   certbot:
-    image: certbot/certbot
+    build:
+      context: ./
+      dockerfile: certbot/Dockerfile
     volumes:
       - ./certs/local/output:/etc/letsencrypt/live
-      - ./certbot/scripts/check-for-certs.sh:/bin/create-and-copy-certs.sh
     entrypoint: >
-      /bin/create-and-copy-certs.sh www.donnybrook.boston
- #   entrypoint: >
- #     certbot certonly --standalone --agree-tos --no-eff-email 
- #     -m david.james.alderson@gmail.com -d www.donnybrook.boston 
- #     --keep-until-expiring --reuse-key 
- #     --cert-path /etc/letsencrypt/live
- #     --key-path /etc/letsencrypt/live
- #     --deploy-hook "/bin/check-for-certs.sh"
+      certbot certonly --standalone --agree-tos --no-eff-email 
+      -m david.james.alderson@gmail.com -d www.donnybrook.boston 
+      --keep-until-expiring --reuse-key 
+      --cert-path /etc/letsencrypt/live
+      --key-path /etc/letsencrypt/live
+      --deploy-hook "/bin/check-for-certs.sh"
  #   command: >
  #     ln -sf /etc/letsencrypt/live/www.donnybrook.boston/fullchain.pem
  #     /etc/letsencrypt/live/fullchain.pem &&
@@ -31,7 +30,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./certs/local/output:/etc/nginx/ssl
+      - ./certs/local/output/www.donnybrook.boston:/etc/nginx/ssl
       - ./nginx/scripts:/scripts
     depends_on:
       certbot:
