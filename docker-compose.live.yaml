@@ -9,7 +9,7 @@ services:
 
   nginx:
     build:
-      context: ./
+      contexdoct: ./
       dockerfile: nginx/Dockerfile
     ports:
       - "80:80"
@@ -18,8 +18,10 @@ services:
       - ./certs/local/output:/etc/nginx/ssl
       - ./nginx/scripts:/scripts
     depends_on:
-      - certbot
-      - sanic_app
+      certbot:
+        condition: service_healthy
+      sanic_app:
+        condition: service_healthy
     command: ["nginx", "-g", "daemon off;"]
     
   sanic_app:
