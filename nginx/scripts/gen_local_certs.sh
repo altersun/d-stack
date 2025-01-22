@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CERT_DIR="/etc/nginx/ssl"
+CERT_DIR="/etc/nginx/ssl/"
 
 echo "Checking for existing certificates..."
 if [ -f "${CERT_DIR}/fullchain.pem" ] && [ -f "${CERT_DIR}/privkey.pem" ]; then

@@ -9,7 +9,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./certs/local/output:/etc/nginx/ssl
+      - ./certs/local/output/www.donnybrook.boston:/etc/nginx/ssl
       - ./nginx/scripts:/scripts
     depends_on:
       - sanic_app
