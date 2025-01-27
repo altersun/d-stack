@@ -47,6 +47,14 @@
     <img id="receivedImage" alt="The future awaits  ..." style="max-width: 100%;">
 
     <script>
+        function isSecure() {
+            return window.location.protocol === 'https:';
+        }
+
+        function wsCorrectProtocol(baseWsUrl) {
+            return isSecure() ? baseWsUrl.replace('ws:', 'wss:') : baseWsUrl;
+        }
+        
         function set_button_enabled(setting) {
             button = document.getElementById('fetchButton');
             if (setting) {
@@ -59,7 +67,7 @@
         }
 
         function request_image(send_str) {
-            const socket = new WebSocket('ws://' + window.location.host + '/ws/sevenballanswer');
+            const socket = new WebSocket(wsCorrectProtocol('ws://' + window.location.host + '/ws/sevenballanswer'));
             socket.binaryType = "arrayBuffer";
 
             socket.addEventListener('open', () => {
