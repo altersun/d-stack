@@ -34,8 +34,16 @@
     <button id="lower" disabled>Lower</button>
 
     <script>
+        function isSecure() {
+            return window.location.protocol === 'https:';
+        }
+
+        function wsCorrectProtocol(baseWsUrl) {
+            return isSecure() ? baseWsUrl.replace('ws:', 'wss:') : baseWsUrl;
+        }
+
         const urlPath = window.location.pathname;
-        const match = urlPath.match(/\/guessy(?:\/(\d{1,4}))?/);
+        const match = urlPath.match(/\/guessie(?:\/(\d{1,4}))?/);
         
         let number = 100; // Default value if no number is provided
         if (match && match[1]) {
@@ -47,7 +55,7 @@
             throw new Error("Number out of range.");
         }
 
-        const wsUrl = `ws://${window.location.host}/ws/guessy/${number}`;
+        const wsUrl = wsCorrectProtocol(`ws://${window.location.host}/ws/guessie/${number}`);
         let sessionKey = "";
 
         const messageDiv = document.getElementById("message");

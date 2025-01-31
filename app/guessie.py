@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from multiprocessing import Process
+from multiprocessing import Process, set_start_method
 import os
 from sanic import Sanic, response, Request, Websocket
 from sanic.log import logger
@@ -10,6 +10,8 @@ import time
 from typing import AsyncGenerator
 
 
+SPATH = './guession_data_mgr.uds'
+
 @dataclass
 class SessionData:
     generator: AsyncGenerator
@@ -17,7 +19,7 @@ class SessionData:
 
 
 # Check if socket is in use
-def is_socket_in_use(path :str) -> bool:
+def is_socket_in_use(path: str) -> bool:
     return \
         os.path.exists(path) and \
         socket.socket(socket.AF_UNIX, socket.SOCK_STREAM).connect_ex(path) == 0
@@ -129,6 +131,10 @@ async def data_store_server(socket_path: str):
         await server.serve_forever()
 
 
+def run_data_store_server(path: str):
+    asyncio.run(data_store_server(path))
+
+
 async def ask_guessie(msg: str, path: str) -> str:
     reader, writer = await asyncio.open_unix_connection(path)
     writer.write(msg.encode())
@@ -140,13 +146,21 @@ async def ask_guessie(msg: str, path: str) -> str:
 
  
 def setup_guessie(app):
-    spath = './guession_data_mgr.uds'
-    if not is_socket_in_use(spath):
-        data_store_process = Process(
-            target=data_store_server, 
-            daemon = True,
-            kwargs={'socket_path': spath}
-        )
+
+    @app.before_server_start
+    async def set_multiprocessing(app, loop):
+        try:
+            set_start_method("fork", force=True)
+        except RuntimeError:
+            pass  # Already set, ignore
+    
+        if not is_socket_in_use(SPATH):
+            data_store_process = Process(
+                target=run_data_store_server, 
+                kwargs={'socket_path': SPATH}
+            )
+            data_store_process.start()
+            logger.info("Guessie server started")
 
     @app.websocket("/ws/guessie/<number:int>")
     async def guessdriver(request: Request, ws: Websocket, number: int):
@@ -157,7 +171,7 @@ def setup_guessie(app):
             else:
                 request_string = msg.rstrip()
             logger.info(f"guessie requesting: {request_string}")
-            response = await ask_guessie(request_string)
+            response = await ask_guessie(request_string, SPATH)
             logger.info(f"guessie said: {response}")
             await ws.send(response)
             await ws.close()
@@ -173,7 +187,8 @@ def setup_guessie(app):
     
     @app.before_server_stop
     async def guessie_teardown():
-        data_store_process.terminate()
+        if os.path.exits(SPATH):
+            os.remove(SPATH)
         
 
 if __name__ == '__main__':
