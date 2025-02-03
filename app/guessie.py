@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from multiprocessing import Process, set_start_method
+from multiprocessing import Manager
 import os
 from sanic import Sanic, response, Request, Websocket
 from sanic.log import logger
@@ -16,13 +16,6 @@ SPATH = './guession_data_mgr.uds'
 class SessionData:
     generator: AsyncGenerator
     last_access: float
-
-
-# Check if socket is in use
-def is_socket_in_use(path: str) -> bool:
-    return \
-        os.path.exists(path) and \
-        socket.socket(socket.AF_UNIX, socket.SOCK_STREAM).connect_ex(path) == 0
 
 
 async def guess_generator(maximum: int):
@@ -118,34 +111,51 @@ async def data_store_client_handler(storage, keygen, reader, writer):
         await writer.wait_closed()
 
 
-async def data_store_server(socket_path: str):
-    storage = {}
-    keygen = session_key_generator()
-    server = await asyncio.start_unix_server(
-        lambda r, w: data_store_client_handler(storage, keygen, r, w),
-        path=socket_path
-    )
-    logger.info(f"Server listening on {socket_path}")
-    asyncio.create_task(manage_session_store(storage))
-    async with server:
-        await server.serve_forever()
 
 
-def run_data_store_server(path: str):
-    asyncio.run(data_store_server(path))
+async def data_store_client_handler(storage, keygen, reader, writer):
+    try:
+        data = await reader.read(32)
+        message = data.decode()
+        logger.info(f"Received: {message}")
+        response = ""
 
+        # Format: key {lower|higher|correct}
+        # Special format: 0 {maximum}
+        rcvd = message.split()
+        key = int(rcvd[0])
 
-async def ask_guessie(msg: str, path: str) -> str:
-    reader, writer = await asyncio.open_unix_connection(path)
-    writer.write(msg.encode())
-    await writer.drain()
-    response = await reader.read(32)
-    writer.close()
-    await writer.wait_closed()
-    return response.decode()
+        # Return: key {guess|0}
+        # The 0 is if the guessing is finished
+        if key == 0:
+            newkey = await anext(keygen)
+            guesser = guess_generator(int(rcvd[1]))
+            guess = await anext(guesser)
+            storage[newkey] = SessionData(guesser, time.time())
+            response = f"{key} {guess}"
+        else:
+            to_send = [f"{key}",]
+            result = rcvd[1]
+            try:
+                guess = await storage[key].generator.asend(result)
+                to_send.append(f"{guess}")
+            except StopIteration:
+                to_send.append("0")
+                del storage[key]
+            response = " ".join(to_send)
+  
+        writer.write(response.encode())
+        await writer.drain()
+        logger.info(f"Sent: {response}")
+    except Exception as e:
+        logger.exception(f"Error: {e}")
+    finally:
+        writer.close()
+        await writer.wait_closed()
 
  
 def setup_guessie(app):
+    storage = Manager()
 
     @app.before_server_start
     async def set_multiprocessing(app, loop):
