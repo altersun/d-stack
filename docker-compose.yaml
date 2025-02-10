@@ -14,6 +14,9 @@ services:
     depends_on:
       sanic_app:
         condition: service_started
+    networks:
+      - proxy
+    
 
   sanic_app:
     build:
@@ -21,5 +24,10 @@ services:
       dockerfile: sanic/Dockerfile
     ports:
       - "8000:8000"
+    networks:
+      - proxy
 
 
+networks:
+  proxy:
+    external: true
