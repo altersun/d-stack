@@ -44,7 +44,7 @@
 
         const urlPath = window.location.pathname;
         const match = urlPath.match(/\/guessie(?:\/(\d{1,4}))?/);
-        
+
         let number = 100; // Default value if no number is provided
         if (match && match[1]) {
             number = parseInt(match[1], 10);
@@ -55,9 +55,13 @@
             throw new Error("Number out of range.");
         }
 
-        const wsUrl = wsCorrectProtocol(`ws://${window.location.host}/ws/guessie/${number}`);
-        let sessionKey = "";
+        // Tracking variables
+        let low_v = 1;
+        let high_v = number;
+        let correct_v = false;
+        let guess_v = null;
 
+        const wsUrl = wsCorrectProtocol(`ws://${window.location.host}/ws/guessie_guess`);
         const messageDiv = document.getElementById("message");
         const buttons = {
             higher: document.getElementById("higher"),
@@ -65,42 +69,64 @@
             lower: document.getElementById("lower")
         };
 
-        function toggleButtons(state) {
+        function setButtonsEnabled(state) {
             Object.values(buttons).forEach(button => button.disabled = !state);
         }
 
         function handleResponse(response) {
             console.log(`Received: ${response}`)
-            const [key, integerResponse] = response.split(" ");
-            sessionKey = key;
-            messageDiv.innerText = integerResponse;
-            toggleButtons(true);
+            messageDiv.innerText = response;
+            setButtonsEnabled(true);
         }
 
-        function sendMessage(buttonText) {
+        function jsonify_values() {
+            var obj = {
+                high: high_v,
+                low: low_v,
+                correct: false
+            }
+            return JSON.stringify(obj)
+        }
+
+        function request_guess() {
             const ws = new WebSocket(wsUrl);
-            ws.onopen = () => {
-                ws.send(`${sessionKey} ${buttonText.toLowerCase()}`);
-            };
-            ws.onmessage = (event) => {
-                handleResponse(event.data);
-                ws.close();
-            };
+
+            ws.addEventListener('open', () => {
+                console.log('WebSocket connection established');
+                ws.send(jsonify_values());
+                setButtonsEnabled(false)
+            });
+
+            // Handle incoming messages
+            ws.addEventListener('message', (event) => {
+                console.log('Received message : ', event.data)
+                guess_v = parseInt(event.data)
+                ws.close(); // Close the WebSocket after receiving the message
+                    
+            });
+
+            // Handle errors
+            ws.addEventListener('error', (error) => {
+                console.error('WebSocket error:', error);
+                ws.close(); // Ensure WebSocket is closed on error
+                setButtonsEnabled(true)
+            });
+
+            // Handle WebSocket close event
+            ws.addEventListener('close', () => {
+                console.log('WebSocket connection closed.');
+                setButtonsEnabled(true)
+            });
+
         }
 
-        const ws = new WebSocket(wsUrl);
-        ws.onopen = () => {
-            ws.send("START");
-        };
-
-        ws.onmessage = (event) => {
-            handleResponse(event.data);
-            ws.close();
+        window.onload = function() {
+            request_guess();
         };
 
         Object.keys(buttons).forEach(buttonKey => {
             buttons[buttonKey].addEventListener("click", () => {
-                toggleButtons(false);
+                setButtonsEnabled(false);
                 sendMessage(buttons[buttonKey].innerText);
             });
         });

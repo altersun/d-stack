@@ -1,4 +1,4 @@
-from multiprocessing import set_start_method
+
 from sanic import Sanic
 from sanic.log import logger
 
