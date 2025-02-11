@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>I'll guess your number</title>
+    <title>🦕 I'll guess your number!</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 50px;
+            background-color: #dcc8c8;
         }
         #message {
             font-size: 24px;
@@ -28,7 +29,9 @@
     </style>
 </head>
 <body>
-    <div id="message">Wait for it...</div>
+    <h2 style="font-size:10vw" id="message">Wait for it...</h2>
+    <img src="/static/guessie/nessie.png" alt="Guessie the Nessie!" 
+  style="width: 50%;">
     <button id="higher" disabled>Higher</button>
     <button id="correct" disabled>Correct</button>
     <button id="lower" disabled>Lower</button>
@@ -44,6 +47,8 @@
 
         const urlPath = window.location.pathname;
         const match = urlPath.match(/\/guessie(?:\/(\d{1,4}))?/);
+        const playAgainStr = "Play again?";
+        const correctStr = "Correct";
 
         let number = 100; // Default value if no number is provided
         if (match && match[1]) {
@@ -73,34 +78,49 @@
             Object.values(buttons).forEach(button => button.disabled = !state);
         }
 
-        function handleResponse(response) {
-            console.log(`Received: ${response}`)
-            messageDiv.innerText = response;
-            setButtonsEnabled(true);
-        }
-
         function jsonify_values() {
             var obj = {
                 high: high_v,
                 low: low_v,
-                correct: false
+                correct: correct_v
             }
             return JSON.stringify(obj)
         }
+
+        function correct_handler() {
+            buttons.lower.disabled = true;
+            buttons.higher.disabled = true;
+            buttons.correct.disabled = false;
+            buttons.correct.textContent = playAgainStr;
+            low_v = 1;
+            high_v = number;
+            correct_v = false;
+            guess_v = null;
+        }
+    
 
         function request_guess() {
             const ws = new WebSocket(wsUrl);
 
             ws.addEventListener('open', () => {
                 console.log('WebSocket connection established');
+                jstr = jsonify_values();
+                console.log('Sendnding: ', jstr);
                 ws.send(jsonify_values());
-                setButtonsEnabled(false)
+                setButtonsEnabled(false);
             });
 
             // Handle incoming messages
             ws.addEventListener('message', (event) => {
-                console.log('Received message : ', event.data)
-                guess_v = parseInt(event.data)
+                console.log('Received message : ', event.data);
+                if (isNaN(event.data)) {
+                    // Non-number sent when correct
+                    correct_handler();
+                } else {
+                    guess_v = parseInt(event.data);
+                    setButtonsEnabled(true);
+                }
+                messageDiv.innerText = event.data;
                 ws.close(); // Close the WebSocket after receiving the message
                     
             });
@@ -109,13 +129,17 @@
             ws.addEventListener('error', (error) => {
                 console.error('WebSocket error:', error);
                 ws.close(); // Ensure WebSocket is closed on error
-                setButtonsEnabled(true)
+                if (buttons.correct.textContent != playAgainStr) {
+                    setButtonsEnabled(true);
+                }
             });
 
             // Handle WebSocket close event
             ws.addEventListener('close', () => {
                 console.log('WebSocket connection closed.');
-                setButtonsEnabled(true)
+                if (buttons.correct.textContent != playAgainStr) {
+                    setButtonsEnabled(true);
+                }
             });
 
         }
@@ -124,12 +148,40 @@
             request_guess();
         };
 
-        Object.keys(buttons).forEach(buttonKey => {
-            buttons[buttonKey].addEventListener("click", () => {
-                setButtonsEnabled(false);
-                sendMessage(buttons[buttonKey].innerText);
-            });
+        buttons.higher.addEventListener("click", () => {
+            if (high_v == low_v) {
+                low_v = guess_v;
+            } else {
+                low_v = guess_v + 1;
+            }
+            
+            request_guess();
         });
+
+        buttons.lower.addEventListener("click", () => {
+            if (high_v == low_v) {
+                high_v = guess_v;
+            } else {
+                high_v = guess_v - 1;
+            }
+            request_guess();
+        });
+
+        buttons.correct.addEventListener("click", () => {
+            if (buttons.correct.textContent == playAgainStr) {
+                // Start new game
+                buttons.correct.textContent = correctStr;
+                setButtonsEnabled(true);
+            } else {
+                correct_v = true;
+            }
+            request_guess();
+        });
+
+        
+
+
+
     </script>
 </body>
 </html>

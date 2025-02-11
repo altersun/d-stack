@@ -10,6 +10,7 @@ from streetsigner import setup_streetsigner
 def init():
     
     app = Sanic("D-Stack")
+    app.static("/static", "./static")
     setup_guessie(app)
     setup_sevenball(app)
     setup_streetsigner(app)
