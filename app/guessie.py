@@ -143,14 +143,14 @@ def setup_guessie(app):
                 logger.exception("Message must have fields 'high', 'low', and 'correct'")
             await ws.send(response)
 
-    @app.route("/guessie/<number:int>", name="guessie_specific")
-    async def guessserver(request, number):
+    @app.route("/guessie/<upper:strorempty>", name="guessie_specific")
+    async def guessserver(request, upper):
         with open("static/guessie/guessie.html") as file:
             return response.html(file.read())
 
     @app.route("/guessie", name="guessie_generic")
     async def guessserver_g(request):
-        return await guessserver(request, number=100)
+        return await guessserver(request, upper="100")
 
         
 

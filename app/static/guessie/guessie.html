@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🦕 I'll guess your number!</title>
+    <title>🦕?</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -37,6 +37,52 @@
     <button id="lower" disabled>Lower</button>
 
     <script>
+        class Guess {
+            constructor(high, low) {
+                this.high = high;
+                this.low = low;
+                this.guess = null;
+                this.correct = false;
+            }
+
+            jsonify() {
+                return JSON.stringify({
+                    high: this.high,
+                    low: this.low,
+                    last_guess: this.guess,
+                    correct: this.correct
+                })
+            }
+        }
+
+        class GuessStack {
+            constructor() {
+                this.clear();
+            }
+
+            push(guess) {
+                if (guess instanceof Guess) {
+                    this.stack.push(guess);
+                } else {
+                    throw new Erro ("Only Guess type may be pushed");
+                }
+            }
+
+            pop() {
+                return this.stack.pop() || null;
+            }
+
+            peek() {
+                return this.stack.length > 0 ? 
+                    this.stack[this.stack.length - 1] : null;
+            }
+
+            clear() {
+                this.stack = [];
+            }
+        }
+
+
         function isSecure() {
             return window.location.protocol === 'https:';
         }
@@ -45,26 +91,20 @@
             return isSecure() ? baseWsUrl.replace('ws:', 'wss:') : baseWsUrl;
         }
 
-        const urlPath = window.location.pathname;
-        const match = urlPath.match(/\/guessie(?:\/(\d{1,4}))?/);
+
         const playAgainStr = "Play again?";
         const correctStr = "Correct";
 
-        let number = 100; // Default value if no number is provided
-        if (match && match[1]) {
-            number = parseInt(match[1], 10);
-        }
+        // Placeholder for URL-provided upper limit
+        let upper_limit = null;
 
-        if (number < 10 || number > 1000) {
-            document.getElementById("message").innerText = "Number out of range (10-1000).";
-            throw new Error("Number out of range.");
-        }
+        const guessStack = new GuessStack();
 
         // Tracking variables
-        let low_v = 1;
-        let high_v = number;
-        let correct_v = false;
-        let guess_v = null;
+        //let low_v = 1;
+        //let high_v = number;
+        //let correct_v = false;
+        //let guess_v = null;
 
         const wsUrl = wsCorrectProtocol(`ws://${window.location.host}/ws/guessie_guess`);
         const messageDiv = document.getElementById("message");
@@ -78,24 +118,13 @@
             Object.values(buttons).forEach(button => button.disabled = !state);
         }
 
-        function jsonify_values() {
-            var obj = {
-                high: high_v,
-                low: low_v,
-                correct: correct_v
-            }
-            return JSON.stringify(obj)
-        }
-
         function correct_handler() {
             buttons.lower.disabled = true;
             buttons.higher.disabled = true;
             buttons.correct.disabled = false;
             buttons.correct.textContent = playAgainStr;
-            low_v = 1;
-            high_v = number;
-            correct_v = false;
-            guess_v = null;
+            guessStack.clear();
+            guessStack.push(new Guess(upper_limit, 1));
         }
     
 
@@ -104,9 +133,9 @@
 
             ws.addEventListener('open', () => {
                 console.log('WebSocket connection established');
-                jstr = jsonify_values();
+                jstr = guessStack.peek().jsonify()
                 console.log('Sendnding: ', jstr);
-                ws.send(jsonify_values());
+                ws.send(jstr);
                 setButtonsEnabled(false);
             });
 
@@ -117,7 +146,8 @@
                     // Non-number sent when correct
                     correct_handler();
                 } else {
-                    guess_v = parseInt(event.data);
+                    guessStack.peek().guess = parseInt(event.data);
+                    console.log("Saved guess:", guessStack.peek() )
                     setButtonsEnabled(true);
                 }
                 messageDiv.innerText = event.data;
@@ -145,25 +175,49 @@
         }
 
         window.onload = function() {
+            const path = window.location.pathname;
+            let value = path.replace(/^\/guessie\/?/, "");
+            if (!value) {
+                value = "100";
+            }
+
+            // Check if value is numeric and in range
+            upper_limit = parseInt(value, 10);
+            if (Number.isNaN(upper_limit) || upper_limit < 10 || upper_limit > 1000) {
+                messageDiv.innerText = 'Please use 10 to 1000 🦕😢';
+                messageDiv.style.fontSize = "4vw";
+                setButtonsEnabled(false);
+                return;
+            }
+            guessStack.push(new Guess(upper_limit, 1));
             request_guess();
         };
 
         buttons.higher.addEventListener("click", () => {
+            high_v = guessStack.peek().high;
+            low_v = guessStack.peek().low;
+            guess_v = guessStack.peek().guess;
+            console.log("Before: ", guessStack.peek())
             if (high_v == low_v) {
                 low_v = guess_v;
             } else {
                 low_v = guess_v + 1;
             }
-            
+            console.log("After: ", guessStack.peek())
+            guessStack.push(new Guess(high_v, low_v));
             request_guess();
         });
 
         buttons.lower.addEventListener("click", () => {
+            high_v = guessStack.peek().high;
+            low_v = guessStack.peek().low;
+            guess_v = guessStack.peek().guess;
             if (high_v == low_v) {
                 high_v = guess_v;
             } else {
                 high_v = guess_v - 1;
             }
+            guessStack.push(new Guess(high_v, low_v));
             request_guess();
         });
 
@@ -173,8 +227,9 @@
                 buttons.correct.textContent = correctStr;
                 setButtonsEnabled(true);
             } else {
-                correct_v = true;
+                guessStack.peek().correct = true;
             }
+
             request_guess();
         });
 
