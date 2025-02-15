@@ -27,14 +27,17 @@
             cursor: not-allowed;
         }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+    <h1 style=font-size:5vw" id="header">...</h1>
     <h2 style="font-size:10vw" id="message">Wait for it...</h2>
-    <img src="/static/guessie/nessie.png" alt="Guessie the Nessie!" 
+    <img id="nessie" src="/static/guessie/nessie.png" alt="Guessie the Nessie!" 
   style="width: 50%;">
     <button id="higher" disabled>Higher</button>
     <button id="correct" disabled>Correct</button>
     <button id="lower" disabled>Lower</button>
+    <button id="back" disabled>Back 🔙</button>
 
     <script>
         class Guess {
@@ -80,6 +83,10 @@
             clear() {
                 this.stack = [];
             }
+
+            size() {
+                return this.stack.length;
+            }
         }
 
 
@@ -94,24 +101,18 @@
 
         const playAgainStr = "Play again?";
         const correctStr = "Correct";
+        const back_button = document.getElementById("back");
 
         // Placeholder for URL-provided upper limit
         let upper_limit = null;
-
         const guessStack = new GuessStack();
-
-        // Tracking variables
-        //let low_v = 1;
-        //let high_v = number;
-        //let correct_v = false;
-        //let guess_v = null;
 
         const wsUrl = wsCorrectProtocol(`ws://${window.location.host}/ws/guessie_guess`);
         const messageDiv = document.getElementById("message");
         const buttons = {
             higher: document.getElementById("higher"),
             correct: document.getElementById("correct"),
-            lower: document.getElementById("lower")
+            lower: document.getElementById("lower"),
         };
 
         function setButtonsEnabled(state) {
@@ -175,6 +176,9 @@
         }
 
         window.onload = function() {
+            back_button.disabled = true;
+            adjustImageSize();
+            let header = document.getElementById("header");
             const path = window.location.pathname;
             let value = path.replace(/^\/guessie\/?/, "");
             if (!value) {
@@ -184,14 +188,19 @@
             // Check if value is numeric and in range
             upper_limit = parseInt(value, 10);
             if (Number.isNaN(upper_limit) || upper_limit < 10 || upper_limit > 1000) {
-                messageDiv.innerText = 'Please use 10 to 1000 🦕😢';
-                messageDiv.style.fontSize = "4vw";
+                header.innerText = 'Please use 10 to 1000 🦕😢';
+                messageDiv.innerText = "";
                 setButtonsEnabled(false);
                 return;
             }
+            header.innerText = "Nessie will guess your number from 1 to " + upper_limit;
             guessStack.push(new Guess(upper_limit, 1));
             request_guess();
         };
+
+        window.onresize = function() {
+            adjustImageSize();
+        }
 
         buttons.higher.addEventListener("click", () => {
             high_v = guessStack.peek().high;
@@ -205,6 +214,7 @@
             }
             console.log("After: ", guessStack.peek())
             guessStack.push(new Guess(high_v, low_v));
+            back_button.disabled = false;
             request_guess();
         });
 
@@ -218,6 +228,7 @@
                 high_v = guess_v - 1;
             }
             guessStack.push(new Guess(high_v, low_v));
+            back_button.disabled = false;
             request_guess();
         });
 
@@ -233,9 +244,27 @@
             request_guess();
         });
 
-        
+        back_button.addEventListener("click", () => {
+            guessStack.pop();
+            messageDiv.innerText = guessStack.peek().guess;
+            console.log("i dunno why the button is not turning off", guessStack.size())
+            if (guessStack.size() <= 1) {
+                back_button.disabled = true;
+            }
+        });
 
-
+        function adjustImageSize() {
+            const img = document.getElementById("nessie");
+            if (window.innerWidth > window.innerHeight) {
+                // Landscape: Scale by width
+                img.style.width = "15vw";   
+                img.style.height = "auto";
+            } else {
+                // Portrait: Scale by heights
+                img.style.height = "25vh";
+                img.style.width = "auto";
+            }
+        }
 
     </script>
 </body>
