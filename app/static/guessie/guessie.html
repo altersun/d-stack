@@ -124,11 +124,11 @@
             buttons.higher.disabled = true;
             buttons.correct.disabled = false;
             buttons.correct.textContent = playAgainStr;
+            back_button.disabled = true;
             guessStack.clear();
             guessStack.push(new Guess(upper_limit, 1));
         }
     
-
         function request_guess() {
             const ws = new WebSocket(wsUrl);
 
@@ -237,6 +237,7 @@
                 // Start new game
                 buttons.correct.textContent = correctStr;
                 setButtonsEnabled(true);
+                back_button.disabled = true;
             } else {
                 guessStack.peek().correct = true;
             }
