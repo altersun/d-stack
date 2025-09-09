@@ -102,6 +102,8 @@
         const playAgainStr = "Play again?";
         const correctStr = "Correct";
         const back_button = document.getElementById("back");
+        const GUESS_RANGE_MAX = 100000;
+        const GUESS_RANGE_MIN = 10;
 
         // Placeholder for URL-provided upper limit
         let upper_limit = null;
@@ -187,8 +189,8 @@
 
             // Check if value is numeric and in range
             upper_limit = parseInt(value, 10);
-            if (Number.isNaN(upper_limit) || upper_limit < 10 || upper_limit > 1000) {
-                header.innerText = 'Please use 10 to 1000 🦕😢';
+            if (Number.isNaN(upper_limit) || upper_limit < GUESS_RANGE_MIN || upper_limit > GUESS_RANGE_MAX) {
+                header.innerText = `Please use ${GUESS_RANGE_MIN} to ${GUESS_RANGE_MAX} 🦕😢`;
                 messageDiv.innerText = "";
                 setButtonsEnabled(false);
                 return;
@@ -207,7 +209,10 @@
             low_v = guessStack.peek().low;
             guess_v = guessStack.peek().guess;
             console.log("Before: ", guessStack.peek())
-            if (high_v == low_v) {
+            if (high_v == upper_limit && low_v == upper_limit -1) {
+                // Pass
+            }
+            else if (high_v == low_v) {
                 low_v = guess_v;
             } else {
                 low_v = guess_v + 1;

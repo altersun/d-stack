@@ -23,7 +23,7 @@ async def guess_generator(maximum: int):
     top = maximum
     while True: 
         unequal =  bottom != top
-        print(f"Bottom: {bottom} Top: {top}")
+        logger.info(f"Bottom: {bottom} Top: {top}")
         guess = await rdo.get_random_int(top, bottom) if unequal else top
         guess = 1 if guess < 1 else guess
         response = yield guess
