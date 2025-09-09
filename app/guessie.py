@@ -1,21 +1,8 @@
 import asyncio
-from dataclasses import dataclass
 import json
-import os
 from sanic import Sanic, response, Request, Websocket
 from sanic.log import logger
-import socket
 import random_dot_org as rdo
-import time
-from typing import AsyncGenerator
-
-
-SPATH = './guession_data_mgr.uds'
-
-@dataclass
-class SessionData:
-    generator: AsyncGenerator
-    last_access: float
 
 
 async def guess_generator(maximum: int):
@@ -36,6 +23,7 @@ async def guess_generator(maximum: int):
             break
         logger.info(f"Bottom {bottom} Top {top}")
 
+
 async def test():
     import sys
     guesser = guess_generator(10)
@@ -51,64 +39,6 @@ async def test():
             print(f"I guess {guess}")
         except StopAsyncIteration:
             break
-
-
-async def manage_session_store(storage):
-    timeout = 600 # Clean things up every 10 minutes
-    while True:
-        await asyncio.sleep(timeout)
-        for id, data in storage:
-            if data.last_access < time.time() - timeout:
-                del storage[id]
-
-
-async def session_key_generator():
-    # TODO: More elegent key generation
-    key = 1
-    while True:
-        key += 1
-        yield key
-
-
-async def data_store_client_handler(storage, keygen, reader, writer):
-    try:
-        data = await reader.read(32)
-        message = data.decode()
-        logger.info(f"Received: {message}")
-        response = ""
-
-        # Format: key {lower|higher|correct}
-        # Special format: 0 {maximum}
-        rcvd = message.split()
-        key = int(rcvd[0])
-
-        # Return: key {guess|0}
-        # The 0 is if the guessing is finished
-        if key == 0:
-            newkey = await anext(keygen)
-            guesser = guess_generator(int(rcvd[1]))
-            guess = await anext(guesser)
-            storage[newkey] = SessionData(guesser, time.time())
-            response = f"{key} {guess}"
-        else:
-            to_send = [f"{key}",]
-            result = rcvd[1]
-            try:
-                guess = await storage[key].generator.asend(result)
-                to_send.append(f"{guess}")
-            except StopIteration:
-                to_send.append("0")
-                del storage[key]
-            response = " ".join(to_send)
-  
-        writer.write(response.encode())
-        await writer.drain()
-        logger.info(f"Sent: {response}")
-    except Exception as e:
-        logger.exception(f"Error: {e}")
-    finally:
-        writer.close()
-        await writer.wait_closed()
 
  
 def setup_guessie(app):

@@ -190,6 +190,7 @@
             // Check if value is numeric and in range
             upper_limit = parseInt(value, 10);
             if (Number.isNaN(upper_limit) || upper_limit < GUESS_RANGE_MIN || upper_limit > GUESS_RANGE_MAX) {
+                console.log(`bad upper limit: ${upper_limit}`)
                 header.innerText = `Please use ${GUESS_RANGE_MIN} to ${GUESS_RANGE_MAX} 🦕😢`;
                 messageDiv.innerText = "";
                 setButtonsEnabled(false);
