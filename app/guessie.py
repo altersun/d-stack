@@ -63,10 +63,17 @@ def setup_guessie(app):
                 else:
                     request_string = msg.rstrip()
                     logger.info(f"guessie requesting: {request_string}")
-                    response_raw = await rdo.get_random_int( \
-                                    loaded['high'], loaded['low']) \
-                                    if loaded['high'] != loaded['low'] \
-                                    else loaded['high']
+                    if loaded['high'] <= loaded['low']:
+                        logger.info('NOT using random request')
+                        response_raw = loaded['low']
+                    else:
+                        response_raw = await rdo.get_random_int( \
+                                    loaded['high'], loaded['low'])
+
+                    #response_raw = await rdo.get_random_int( \
+                    #                loaded['high'], loaded['low']) \
+                    #                if loaded['high'] > loaded['low'] \
+                    #                else loaded['low']
                     response = str(response_raw)
                     logger.info(f"guessie said: {response}")
             except KeyError: 
