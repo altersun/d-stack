@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦕?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background-color: #dcc8c8;
+        }
+        #message {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h1 style=font-size:5vw" id="header">...</h1>
+    <h2 style="font-size:10vw" id="message">Wait for it...</h2>
+    <img id="nessie" src="/static/guessie/nessie.png" alt="Guessie the Nessie!" 
+  style="width: 50%;">
+    <button id="higher" disabled>Higher</button>
+    <button id="correct" disabled>Correct</button>
+    <button id="lower" disabled>Lower</button>
+    <button id="back" disabled>Back 🔙</button>
+
+    <script>
+        class Guess {
+            constructor(high, low) {
+                this.high = high;
+                this.low = low;
+                this.guess = null;
+                this.correct = false;
+            }
+
+            jsonify() {
+                return JSON.stringify({
+                    high: this.high,
+                    low: this.low,
+                    last_guess: this.guess,
+                    correct: this.correct
+                })
+            }
+        }
+
+        class GuessStack {
+            constructor() {
+                this.clear();
+            }
+
+            push(guess) {
+                if (guess instanceof Guess) {
+                    this.stack.push(guess);
+                } else {
+                    throw new Erro ("Only Guess type may be pushed");
+                }
+            }
+
+            pop() {
+                return this.stack.pop() || null;
+            }
+
+            peek() {
+                return this.stack.length > 0 ? 
+                    this.stack[this.stack.length - 1] : null;
+            }
+
+            clear() {
+                this.stack = [];
+            }
+
+            size() {
+                return this.stack.length;
+            }
+        }
+
+
+        function isSecure() {
+            return window.location.protocol === 'https:';
+        }
+
+        function wsCorrectProtocol(baseWsUrl) {
+            return isSecure() ? baseWsUrl.replace('ws:', 'wss:') : baseWsUrl;
+        }
+
+
+        const playAgainStr = "Play again?";
+        const correctStr = "Correct";
+        const back_button = document.getElementById("back");
+        const GUESS_RANGE_MAX = 100000;
+        const GUESS_RANGE_MIN = 10;
+
+        // Placeholder for URL-provided upper limit
+        let upper_limit = null;
+        const guessStack = new GuessStack();
+
+        const wsUrl = wsCorrectProtocol(`ws://${window.location.host}/ws/guessie_guess`);
+        const messageDiv = document.getElementById("message");
+        const buttons = {
+            higher: document.getElementById("higher"),
+            correct: document.getElementById("correct"),
+            lower: document.getElementById("lower"),
+        };
+
+        function setButtonsEnabled(state) {
+            Object.values(buttons).forEach(button => button.disabled = !state);
+        }
+
+        function correct_handler() {
+            buttons.lower.disabled = true;
+            buttons.higher.disabled = true;
+            buttons.correct.disabled = false;
+            buttons.correct.textContent = playAgainStr;
+            back_button.disabled = true;
+            guessStack.clear();
+            guessStack.push(new Guess(upper_limit, 1));
+        }
+    
+        function request_guess() {
+            const ws = new WebSocket(wsUrl);
+
+            ws.addEventListener('open', () => {
+                console.log('WebSocket connection established');
+                jstr = guessStack.peek().jsonify()
+                console.log('Sendnding: ', jstr);
+                ws.send(jstr);
+                setButtonsEnabled(false);
+            });
+
+            // Handle incoming messages
+            ws.addEventListener('message', (event) => {
+                console.log('Received message : ', event.data);
+                if (isNaN(event.data)) {
+                    // Non-number sent when correct
+                    correct_handler();
+                } else {
+                    guessStack.peek().guess = parseInt(event.data);
+                    console.log("Saved guess:", guessStack.peek() )
+                    setButtonsEnabled(true);
+                }
+                messageDiv.innerText = event.data;
+                ws.close(); // Close the WebSocket after receiving the message
+                    
+            });
+
+            // Handle errors
+            ws.addEventListener('error', (error) => {
+                console.error('WebSocket error:', error);
+                ws.close(); // Ensure WebSocket is closed on error
+                if (buttons.correct.textContent != playAgainStr) {
+                    setButtonsEnabled(true);
+                }
+            });
+
+            // Handle WebSocket close event
+            ws.addEventListener('close', () => {
+                console.log('WebSocket connection closed.');
+                if (buttons.correct.textContent != playAgainStr) {
+                    setButtonsEnabled(true);
+                }
+            });
+
+        }
+
+        window.onload = function() {
+            back_button.disabled = true;
+            adjustImageSize();
+            let header = document.getElementById("header");
+            const path = window.location.pathname;
+            let value = path.replace(/^\/guessie\/?/, "");
+            if (!value) {
+                value = "100";
+            }
+
+            // Check if value is numeric and in range
+            upper_limit = parseInt(value, 10);
+            if (Number.isNaN(upper_limit) || upper_limit < GUESS_RANGE_MIN || upper_limit > GUESS_RANGE_MAX) {
+                console.log(`bad upper limit: ${upper_limit}`)
+                header.innerText = `Please use ${GUESS_RANGE_MIN} to ${GUESS_RANGE_MAX} 🦕😢`;
+                messageDiv.innerText = "";
+                setButtonsEnabled(false);
+                return;
+            }
+            header.innerText = "Nessie will guess your number from 1 to " + upper_limit;
+            guessStack.push(new Guess(upper_limit, 1));
+            request_guess();
+        };
+
+        window.onresize = function() {
+            adjustImageSize();
+        }
+
+        buttons.higher.addEventListener("click", () => {
+            high_v = guessStack.peek().high;
+            low_v = guessStack.peek().low;
+            guess_v = guessStack.peek().guess;
+            console.log("Before: ", guessStack.peek())
+            if (high_v == upper_limit && low_v == upper_limit -1) {
+                // Pass
+            }
+            else if (high_v == low_v) {
+                low_v = guess_v;
+            } else {
+                low_v = guess_v + 1;
+            }
+            console.log("After: ", guessStack.peek())
+            guessStack.push(new Guess(high_v, low_v));
+            back_button.disabled = false;
+            request_guess();
+        });
+
+        buttons.lower.addEventListener("click", () => {
+            high_v = guessStack.peek().high;
+            low_v = guessStack.peek().low;
+            guess_v = guessStack.peek().guess;
+            if (high_v == low_v) {
+                high_v = guess_v;
+            } else {
+                high_v = guess_v - 1;
+            }
+            guessStack.push(new Guess(high_v, low_v));
+            back_button.disabled = false;
+            request_guess();
+        });
+
+        buttons.correct.addEventListener("click", () => {
+            if (buttons.correct.textContent == playAgainStr) {
+                // Start new game
+                buttons.correct.textContent = correctStr;
+                setButtonsEnabled(true);
+                back_button.disabled = true;
+            } else {
+                guessStack.peek().correct = true;
+            }
+
+            request_guess();
+        });
+
+        back_button.addEventListener("click", () => {
+            guessStack.pop();
+            messageDiv.innerText = guessStack.peek().guess;
+            console.log("i dunno why the button is not turning off", guessStack.size())
+            if (guessStack.size() <= 1) {
+                back_button.disabled = true;
+            }
+        });
+
+        function adjustImageSize() {
+            const img = document.getElementById("nessie");
+            if (window.innerWidth > window.innerHeight) {
+                // Landscape: Scale by width
+                img.style.width = "15vw";   
+                img.style.height = "auto";
+            } else {
+                // Portrait: Scale by heights
+                img.style.height = "25vh";
+                img.style.width = "auto";
+            }
+        }
+
+    </script>
+</body>
+</html>

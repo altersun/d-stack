@@ -64,7 +64,7 @@ def setup_sevenball(app):
                 # 4. Shuffle local list with local randgen
                 # 5. Index into shuffled list with second random int mod <length of list>
                 local_answers = copy.deepcopy(app.ctx.answers)
-                rand_ints = await random_dot_org.get_random_ints(len(local_answers)**2, 2)
+                rand_ints = await random_dot_org.get_random_ints(len(local_answers)**2, quantity=2)
                 random.seed(rand_ints[0])
                 random.shuffle(local_answers)
                 index = (rand_ints[1] % len(local_answers)) - 1

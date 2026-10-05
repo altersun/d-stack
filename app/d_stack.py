@@ -1,19 +1,23 @@
+
 from sanic import Sanic
 from sanic.log import logger
 
+from guessie import setup_guessie
 from sevenball import setup_sevenball
 from streetsigner import setup_streetsigner
 
 
 def init():
+    
     app = Sanic("D-Stack")
+    app.static("/static", "./static")
+    setup_guessie(app)
     setup_sevenball(app)
     setup_streetsigner(app)
     return app
 
 
 if __name__ == '__main__':
-    from sanic import app as sanic_app
-    sanic_app.run(init)
+    init().run()
     logger.info("We D-stackin")
        
